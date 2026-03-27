@@ -86,4 +86,4 @@ export interface Project {
   };
 }
 
-export type ViewMode = 'dashboard' | 'view' | 'edit' | 'ai-wizard';
+export type ViewMode = 'dashboard' | 'view' | 'edit';

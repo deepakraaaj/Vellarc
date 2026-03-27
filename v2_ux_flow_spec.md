@@ -1,4 +1,4 @@
-# DocuMaster v2 UX Flow Spec
+# SpecArc v2 UX Flow Spec
 
 ## Purpose
 

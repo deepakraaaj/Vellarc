@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, PlusCircle, Hexagon, Settings, LogOut, Sparkles, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Settings, LogOut, Sparkles, Moon, Sun } from 'lucide-react';
 
 interface SidebarProps {
   onDashboardClick: () => void;
@@ -19,17 +19,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onDashboardClick, onNewProject
 
         {/* Logo Section */}
         <div className="p-8 flex items-center gap-4 z-10">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-indigo-500 rounded-xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-            <div className="relative bg-gradient-to-br from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-lg border border-white/20">
-                <Hexagon size={24} className="text-white fill-white/20" strokeWidth={2} />
-            </div>
-          </div>
-          <div>
-              <h1 className="font-extrabold text-xl tracking-tight text-gray-900 dark:text-white transition-colors">DocuMaster</h1>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                <p className="text-[10px] font-bold tracking-widest uppercase text-gray-400 dark:text-gray-500">v2.0 Beta</p>
+          <img
+            src="/specarc-mark.svg"
+            alt="SpecArc logo"
+            className="w-14 h-14 shrink-0 drop-shadow-[0_18px_30px_rgba(99,102,241,0.28)]"
+          />
+          <div className="min-w-0 flex-1">
+              <h1 className="font-extrabold text-[1.75rem] leading-none tracking-[-0.04em] text-gray-900 dark:text-white transition-colors">SpecArc</h1>
+              <div className="flex items-center gap-2 mt-2 min-w-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
+                <p className="text-[9px] leading-none font-bold tracking-[0.18em] uppercase text-gray-400 dark:text-gray-500 whitespace-nowrap">AI Product Studio</p>
               </div>
           </div>
         </div>

@@ -42,7 +42,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project, onEdit, onBac
                 <div className="h-6 w-[1px] bg-gray-200/50 dark:bg-white/10 hidden md:block"></div>
                 <div>
                     <h2 className="font-bold text-gray-900 dark:text-white text-lg leading-none">{project.title}</h2>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documentation v1.0</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">SpecArc Blueprint</span>
                 </div>
             </div>
             <div className="flex gap-3">

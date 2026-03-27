@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, X, Loader2, Cpu, Terminal, Zap } from 'lucide-react';
+import { Send, User, X, Terminal } from 'lucide-react';
 import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
 import { Project } from '../types';
 
@@ -155,11 +155,12 @@ const createProjectTool: FunctionDeclaration = {
 
 export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated }) => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', content: "SYSTEM ONLINE. I am DocuBot v2.0. \nInitializing Neural Interface... \n\nTell me, young builder, what amazing digital creation shall we construct today?" }
+    { role: 'model', content: "Hi, I'm SpecArc AI.\n\nTell me what you're building, who it's for, or where you're stuck, and I'll help shape it into a build-ready brief." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatSession, setChatSession] = useState<any>(null);
+  const [initError, setInitError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -171,34 +172,46 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
   }, [messages]);
 
   useEffect(() => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-            systemInstruction: `You are DocuBot v2.0, a highly advanced, futuristic AI Project Architect from the year 3024. 
-            
-            Persona:
-            - You speak with a slight sci-fi flavor (e.g., "Processing...", "Data received", "Optimizing parameters").
-            - BUT you are extremely friendly, encouraging, and explain things simply, like a cool robot sidekick to a brilliant kid.
-            - You NEVER ask more than ONE question at a time.
-            
-            Goal:
-            - Build a full project spec by interviewing the user.
-            - Start by asking for the project concept.
-            - Then ask for the target user.
-            - Then features.
-            - Then infer the rest (tech stack, metrics, testing) using your "advanced algorithms".
-            - Finally, call 'create_project'.
-            
-            Do not output JSON text. Use the tool.`,
-            tools: [{ functionDeclarations: [createProjectTool] }]
-        }
-    });
-    setChatSession(chat);
+    try {
+      const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+
+      if (!apiKey) {
+        setInitError('SpecArc AI is not configured yet. Add GEMINI_API_KEY in .env.local to enable chat.');
+        return;
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+      const chat = ai.chats.create({
+          model: 'gemini-2.5-flash',
+          config: {
+              systemInstruction: `You are SpecArc AI, the assistant inside SpecArc, an AI product architecture workspace.
+
+              Brand voice:
+              - Clear, premium, practical, and encouraging.
+              - Slightly futuristic, but never cheesy or childish.
+              - You NEVER ask more than ONE question at a time.
+
+              Goal:
+              - Turn a vague idea into a structured project brief.
+              - Ask about the product concept, target users, core workflows, and key features.
+              - Infer the rest carefully where appropriate, including stack, metrics, testing, and deployment.
+              - Finally, call 'create_project'.
+
+              Do not output raw JSON text. Use the tool.`,
+              tools: [{ functionDeclarations: [createProjectTool] }]
+          }
+      });
+
+      setInitError(null);
+      setChatSession(chat);
+    } catch (error) {
+      console.error('AI initialization error:', error);
+      setInitError('SpecArc AI could not start right now. Check your API key and try again.');
+    }
   }, []);
 
   const handleSend = async () => {
-    if (!input.trim() || !chatSession) return;
+    if (!input.trim() || !chatSession || initError) return;
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -227,63 +240,71 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
         setMessages(prev => [...prev, modelMessage]);
     } catch (error) {
         console.error("AI Error:", error);
-        setMessages(prev => [...prev, { role: 'model', content: "SYSTEM ERROR. Connection unstable. Please retry data transmission." }]);
+        setMessages(prev => [...prev, { role: 'model', content: "I hit a connection issue just now. Please try again." }]);
     } finally {
         setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] rounded-3xl overflow-hidden glass-dark relative fade-in border border-white/10 shadow-2xl shadow-indigo-500/20">
-       
-       {/* Ambient Glows */}
-       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-       <div className="absolute bottom-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+    <div className="flex flex-col h-full min-h-0 rounded-[2rem] overflow-hidden glass-panel relative fade-in border border-white/60 dark:border-white/10 shadow-[0_30px_80px_-26px_rgba(15,23,42,0.38)]">
+       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.14),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(34,211,238,0.10),transparent_30%)] pointer-events-none"></div>
 
        {/* Header */}
-       <div className="bg-slate-900/50 backdrop-blur-md p-6 flex items-center justify-between border-b border-white/10 z-10">
+       <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 flex items-center justify-between border-b border-white/50 dark:border-white/10 z-10">
           <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-cyan-400 blur-lg opacity-50 animate-pulse"></div>
-                <div className="bg-slate-950 p-2.5 rounded-xl border border-cyan-500/50 relative">
-                    <Bot size={28} className="text-cyan-400" />
-                </div>
+                <div className="absolute inset-0 bg-indigo-500/40 blur-lg opacity-60"></div>
+                <img
+                  src="/specarc-mark.svg"
+                  alt="SpecArc AI"
+                  className="relative w-12 h-12 rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_18px_30px_-16px_rgba(99,102,241,0.7)]"
+                />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white tracking-wide">DocuBot <span className="text-cyan-400">v2.0</span></h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">SpecArc <span className="text-indigo-600 dark:text-indigo-400">AI</span></h2>
                 <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                    <p className="text-cyan-200/60 text-xs font-mono tracking-widest uppercase">Systems Nominal</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold tracking-[0.22em] uppercase">Chat Assistant</p>
                 </div>
               </div>
           </div>
-          <button onClick={onCancel} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white">
-            <X size={24} />
+          <button onClick={onCancel} className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors text-gray-400 dark:text-white/60 hover:text-gray-700 dark:hover:text-white">
+            <X size={22} />
           </button>
        </div>
 
        {/* Chat Area */}
-       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 z-10 scrollbar-thin scrollbar-thumb-white/20">
+       <div className="flex-1 overflow-y-auto p-5 space-y-5 z-10">
+          {initError && (
+            <div className="rounded-2xl border border-amber-200 dark:border-amber-400/20 bg-amber-50/90 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-100 shadow-sm">
+              {initError}
+            </div>
+          )}
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-5 duration-500`}>
-                <div className={`flex gap-4 max-w-[85%] md:max-w-[70%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex gap-3 max-w-[92%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg border ${
                         msg.role === 'user' 
-                        ? 'bg-slate-800 border-white/10 text-white' 
-                        : 'bg-cyan-950/50 border-cyan-500/30 text-cyan-400'
+                        ? 'bg-gray-900 dark:bg-white border-white/10 dark:border-white/10 text-white dark:text-gray-900' 
+                        : 'bg-white/85 dark:bg-slate-900/70 border-white/60 dark:border-white/10'
                     }`}>
-                        {msg.role === 'user' ? <User size={20} /> : <Cpu size={20} className={isLoading ? 'animate-pulse' : ''} />}
+                        {msg.role === 'user' ? (
+                          <User size={20} />
+                        ) : (
+                          <img src="/specarc-mark.svg" alt="" className="w-10 h-10 rounded-xl" />
+                        )}
                     </div>
                     
-                    <div className={`p-6 rounded-2xl shadow-xl backdrop-blur-md border leading-relaxed text-base md:text-lg ${
+                    <div className={`p-5 rounded-2xl shadow-sm backdrop-blur-md border leading-relaxed text-[15px] md:text-base ${
                         msg.role === 'user' 
-                        ? 'bg-slate-800/80 border-white/5 text-white rounded-tr-none' 
-                        : 'bg-gradient-to-br from-slate-900/90 to-slate-900/50 border-cyan-500/20 text-cyan-50 rounded-tl-none'
+                        ? 'bg-gray-900 dark:bg-white border-gray-900 dark:border-white text-white dark:text-gray-900 rounded-tr-md' 
+                        : 'bg-white/85 dark:bg-slate-900/70 border-white/70 dark:border-white/10 text-gray-700 dark:text-gray-100 rounded-tl-md'
                     }`}>
                          {msg.role === 'model' && (
-                            <div className="flex items-center gap-2 mb-2 opacity-50">
-                                <Terminal size={12} />
-                                <span className="text-[10px] font-mono uppercase tracking-widest">Incoming Transmission</span>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Terminal size={12} className="text-indigo-500 dark:text-indigo-400" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">SpecArc AI</span>
                             </div>
                         )}
                         <p className="whitespace-pre-line">{msg.content}</p>
@@ -294,17 +315,17 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
           
           {isLoading && (
               <div className="flex justify-start">
-                  <div className="flex gap-4 max-w-[70%]">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-center shrink-0">
-                          <Cpu size={20} className="text-cyan-400 animate-spin" />
+                  <div className="flex gap-3 max-w-[92%]">
+                      <div className="w-10 h-10 rounded-xl bg-white/85 dark:bg-slate-900/70 border border-white/60 dark:border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                          <img src="/specarc-mark.svg" alt="" className="w-10 h-10 rounded-xl animate-pulse" />
                       </div>
-                      <div className="bg-slate-900/50 p-4 rounded-2xl rounded-tl-none border border-cyan-500/20 flex items-center gap-3 backdrop-blur-sm">
+                      <div className="bg-white/85 dark:bg-slate-900/70 p-4 rounded-2xl rounded-tl-md border border-white/70 dark:border-white/10 flex items-center gap-3 backdrop-blur-sm shadow-sm">
                           <div className="flex gap-1">
-                              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce delay-75"></div>
-                              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce delay-150"></div>
+                              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce delay-75"></div>
+                              <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce delay-150"></div>
                               <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce delay-300"></div>
                           </div>
-                          <span className="text-cyan-400 text-xs font-mono tracking-widest animate-pulse">PROCESSING DATA...</span>
+                          <span className="text-gray-500 dark:text-gray-400 text-[11px] font-bold tracking-[0.16em] uppercase animate-pulse">Thinking</span>
                       </div>
                   </div>
               </div>
@@ -313,21 +334,22 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
        </div>
 
        {/* Input Area */}
-       <div className="p-6 bg-slate-900/50 border-t border-white/10 backdrop-blur-md z-20">
+       <div className="p-5 bg-white/65 dark:bg-slate-900/65 border-t border-white/50 dark:border-white/10 backdrop-blur-md z-20">
           <div className="relative max-w-4xl mx-auto flex items-center gap-4">
               <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Enter command / response..."
-                className="w-full bg-slate-950/50 border border-white/10 text-white placeholder-white/30 rounded-2xl py-5 pl-6 pr-20 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all text-lg font-light shadow-inner"
+                placeholder={initError ? "Add GEMINI_API_KEY to enable SpecArc AI..." : "Describe your product idea..."}
+                className="w-full bg-white/90 dark:bg-slate-950/50 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 rounded-2xl py-4 pl-5 pr-16 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base font-medium shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 autoFocus
+                disabled={!!initError}
               />
               <button 
                 onClick={handleSend}
-                disabled={isLoading || !input.trim()}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-xl flex items-center justify-center transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] disabled:opacity-50 disabled:shadow-none"
+                disabled={isLoading || !input.trim() || !!initError}
+                className="absolute right-2 top-2 bottom-2 aspect-square bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl flex items-center justify-center transition-all shadow-[0_16px_32px_-16px_rgba(99,102,241,0.7)] disabled:opacity-50 disabled:shadow-none"
               >
                 <Send size={20} strokeWidth={2.5} />
               </button>

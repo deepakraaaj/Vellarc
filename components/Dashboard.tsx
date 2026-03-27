@@ -1,11 +1,10 @@
 import React from 'react';
 import { Project } from '../types';
-import { Plus, Search, FileText, Clock, Users, Layers, TrendingUp, Bot, Zap, ArrowUpRight } from 'lucide-react';
+import { Plus, Search, FileText, Clock, Layers, TrendingUp, Zap, ArrowUpRight } from 'lucide-react';
 
 interface DashboardProps {
   projects: Project[];
   onNewProject: () => void;
-  onStartAI: () => void;
   onSelectProject: (project: Project) => void;
 }
 
@@ -29,7 +28,7 @@ const StatCard: React.FC<{ label: string; value: number; icon: React.ReactNode; 
   </div>
 );
 
-export const Dashboard: React.FC<DashboardProps> = ({ projects, onNewProject, onStartAI, onSelectProject }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ projects, onNewProject, onSelectProject }) => {
   return (
     <div className="fade-in w-full pb-12 pt-4 px-2">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-8">
@@ -42,26 +41,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, onNewProject, on
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
             Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">Creator.</span>
           </h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400 font-medium mt-3 max-w-xl">Your documentation hub is ready. What will you build today?</p>
+          <p className="text-lg text-gray-500 dark:text-gray-400 font-medium mt-3 max-w-xl">Your SpecArc workspace is ready. What will you architect today?</p>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-center">
-            {/* New Modern AI Button with Spinning Gradient Border */}
-            <button
-                onClick={onStartAI}
-                className="group relative w-full sm:w-auto rounded-2xl p-[2px] overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.6)] hover:-translate-y-1"
-            >
-                {/* Spinning Gradient Layer */}
-                <div className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2E8F0_0%,#6366f1_50%,#E2E8F0_100%)] dark:bg-[conic-gradient(from_90deg_at_50%_50%,#1e293b_0%,#818cf8_50%,#1e293b_100%)]" />
-
-                {/* Inner Content Layer */}
-                <div className="relative h-full w-full bg-slate-950 rounded-[14px] px-8 py-5 flex items-center justify-center gap-3 transition-all duration-300 group-hover:bg-slate-900">
-                    <span className="font-bold text-lg text-white tracking-wide">
-                        Generate with AI
-                    </span>
-                </div>
-            </button>
-            
             <button
             onClick={onNewProject}
             className="w-full sm:w-auto bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-gray-700 dark:text-white px-8 py-5 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 font-bold shadow-lg shadow-gray-200/50 dark:shadow-none hover:shadow-xl hover:-translate-y-1 border border-white dark:border-white/10"

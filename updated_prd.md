@@ -1,8 +1,8 @@
-# DocuMaster v2 PRD
+# SpecArc v2 PRD
 
 ## Product Name
 
-DocuMaster
+SpecArc
 
 ## Current Application Context
 
@@ -31,7 +31,7 @@ what information matters, or what an AI builder actually needs.
 
 ## Product Pivot
 
-DocuMaster v2 should evolve from:
+SpecArc v2 should evolve from:
 
 **"a beautiful software documentation builder"**
 
@@ -78,7 +78,7 @@ weak input:
 - no assumptions log
 - no phased breakdown
 
-DocuMaster v2 should solve that context failure before any downstream
+SpecArc v2 should solve that context failure before any downstream
 application-generation prompt is produced.
 
 ## Product Vision
@@ -110,7 +110,7 @@ Enable a user to start with a single raw idea and end with:
 
 ### Primary Job
 
-When I have only a vague app idea, I want DocuMaster to ask the right
+When I have only a vague app idea, I want SpecArc to ask the right
 questions, build the right context, and generate the right prompt pack so that
 an AI builder can produce a much better result than it would from my raw idea
 alone.
@@ -125,13 +125,13 @@ alone.
 
 ## Product Positioning
 
-DocuMaster v2 is not:
+SpecArc v2 is not:
 
 - a generic PRD tool
 - a generic prompt generator
 - a no-code app builder
 
-DocuMaster v2 is:
+SpecArc v2 is:
 
 **a visual AI product architecture workspace for software generation**
 
@@ -303,7 +303,7 @@ Requirements:
 
 ### 4. Canonical Project Context
 
-DocuMaster v2 must maintain a richer project model than the current `Project`
+SpecArc v2 must maintain a richer project model than the current `Project`
 shape.
 
 Minimum additions required:
@@ -397,7 +397,7 @@ Requirements:
 
 ## Interaction Model
 
-The preferred interaction model for DocuMaster v2 is:
+The preferred interaction model for SpecArc v2 is:
 
 1. The user provides a rough idea.
 2. The AI produces a first-pass draft immediately.
@@ -490,7 +490,7 @@ The Project View must become the final presentation layer for:
 
 ### 13. Quality Guardrails
 
-DocuMaster must solve common AI agent failure modes.
+SpecArc must solve common AI agent failure modes.
 
 Requirements:
 
@@ -667,7 +667,7 @@ The user should end with:
 
 ## Non-Goals
 
-DocuMaster v2 should not attempt to:
+SpecArc v2 should not attempt to:
 
 - fully build and host the final application itself
 - become a general collaboration suite in the first phase
@@ -677,7 +677,7 @@ DocuMaster v2 should not attempt to:
 
 ## Success Criteria
 
-DocuMaster v2 succeeds if:
+SpecArc v2 succeeds if:
 
 - a user can start from a vague idea and reach a build-ready project package
   without already knowing how to prompt an LLM
@@ -716,6 +716,6 @@ This application should become:
 
 In short:
 
-**DocuMaster should stop being only a software documentation builder and become
+**SpecArc should stop being only a software documentation builder and become
 the visual AI product architecture, planning, and prompt-preparation system that
 helps users go from vague idea to build-ready execution context.**

@@ -1,8 +1,8 @@
-# DocuMaster v2 Data Model
+# SpecArc v2 Data Model
 
 ## Purpose
 
-This document defines the v2 canonical data model for DocuMaster based on the
+This document defines the v2 canonical data model for SpecArc based on the
 current application structure in:
 
 - `types.ts`

@@ -1,6 +1,6 @@
-# DocuMaster
+# SpecArc
 
-DocuMaster is a polished React + Vite frontend for turning rough product ideas into structured software documentation. The current app lets users create a project manually, refine it in a guided editor, review a presentation-style project view, or generate an initial draft with Gemini-powered chat.
+SpecArc is a polished React + Vite frontend for turning rough product ideas into build-ready product briefs, architecture context, and software planning. The current app lets users create a project manually, refine it in a guided editor, review a presentation-style project view, or generate an initial draft with Gemini-powered chat.
 
 This repository currently contains the frontend prototype and local mock data. Project data lives in React state, so changes are not persisted across reloads.
 
@@ -78,7 +78,7 @@ npm run preview
 │   └── Sidebar.tsx         # Navigation and theme toggle
 ├── mockData.ts             # Seed project shown on first load
 ├── types.ts                # Shared project data model
-├── updated_prd.md          # Product direction for DocuMaster v2
+├── updated_prd.md          # Product direction for SpecArc v2
 ├── v2_data_model.md        # Proposed v2 data model
 └── v2_ux_flow_spec.md      # Proposed v2 UX flow
 ```
@@ -92,7 +92,7 @@ npm run preview
 
 ## Product Direction
 
-The repo also includes planning documents for a broader DocuMaster v2 pivot: evolving from a documentation builder into an AI product architect workspace that turns vague ideas into build-ready context, architecture guidance, phased plans, and prompt packs.
+The repo also includes planning documents for a broader SpecArc v2 pivot: evolving from a documentation builder into an AI product architect workspace that turns vague ideas into build-ready context, architecture guidance, phased plans, and prompt packs.
 
 If you want to continue that direction, start with:
 
