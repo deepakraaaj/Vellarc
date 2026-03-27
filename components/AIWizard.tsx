@@ -317,7 +317,7 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
               <div className="flex justify-start">
                   <div className="flex gap-3 max-w-[92%]">
                       <div className="w-10 h-10 rounded-xl bg-white/85 dark:bg-slate-900/70 border border-white/60 dark:border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-                          <img src="/specarc-mark.svg" alt="" className="w-10 h-10 rounded-xl animate-pulse" />
+                          <img src="/specarc-mark.svg" alt="" className="w-10 h-10 rounded-xl" />
                       </div>
                       <div className="bg-white/85 dark:bg-slate-900/70 p-4 rounded-2xl rounded-tl-md border border-white/70 dark:border-white/10 flex items-center gap-3 backdrop-blur-sm shadow-sm">
                           <div className="flex gap-1">

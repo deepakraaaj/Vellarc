@@ -998,12 +998,12 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)] rounded-3xl overflow-hidden shadow-2xl glass-panel relative">
+    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)] rounded-3xl overflow-hidden shadow-[0_28px_70px_-38px_rgba(15,23,42,0.35)] glass-panel relative">
       {/* Header */}
-      <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-white/50 dark:border-white/10 px-4 md:px-8 py-5 flex items-center justify-between sticky top-0 z-10">
+      <div className="bg-white/82 dark:bg-slate-900/82 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800 px-4 md:px-8 py-5 flex items-center justify-between sticky top-0 z-10">
         <div>
             <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Editing Project</h1>
-            <p className="text-sm md:text-base text-indigo-600 dark:text-indigo-400 font-bold truncate max-w-[150px] md:max-w-xs">{project.title || 'Untitled'}</p>
+            <p className="text-sm md:text-base text-indigo-700 dark:text-indigo-300 font-bold truncate max-w-[150px] md:max-w-xs">{project.title || 'Untitled'}</p>
         </div>
         <div className="flex gap-2 md:gap-4">
             <button onClick={onCancel} className="px-3 md:px-6 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm md:text-base border border-transparent hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm">
@@ -1020,7 +1020,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Navigation Sidebar */}
-        <div className="w-80 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-r border-white/50 dark:border-white/10 overflow-y-auto hidden md:block custom-scrollbar">
+        <div className="w-80 bg-white/62 dark:bg-slate-900/62 backdrop-blur-sm border-r border-slate-200/70 dark:border-slate-800 overflow-y-auto hidden md:block custom-scrollbar">
             <div className="p-6">
                 <p className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-6 pl-2">Configuration</p>
                 <div className="space-y-2 pb-8">
@@ -1030,8 +1030,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                             onClick={() => setActiveStep(index)}
                             className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold text-left transition-all duration-300 ${
                                 activeStep === index 
-                                ? 'bg-white dark:bg-slate-800 shadow-md text-indigo-600 dark:text-indigo-400 border border-white/60 dark:border-slate-700 translate-x-1' 
-                                : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
+                                ? 'bg-white dark:bg-slate-800 shadow-sm text-indigo-700 dark:text-indigo-300 border border-slate-200 dark:border-slate-700 translate-x-1' 
+                                : 'text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
                             }`}
                         >
                             <span className={`shrink-0 transition-colors duration-300 ${activeStep === index ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
@@ -1050,7 +1050,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
         </div>
 
         {/* Form Area Wrapper */}
-        <div className="flex-1 flex flex-col relative overflow-hidden bg-white/30 dark:bg-slate-900/30">
+            <div className="flex-1 flex flex-col relative overflow-hidden bg-white/38 dark:bg-slate-900/38">
             
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4 md:p-10 scroll-smooth">
@@ -1069,7 +1069,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
             </div>
             
             {/* Floating Navigation - Fixed to bottom of Wrapper */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-white/95 via-white/90 to-transparent dark:from-slate-900/95 dark:via-slate-900/90 z-10 backdrop-blur-[2px]">
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-white/96 via-white/88 to-transparent dark:from-slate-900/96 dark:via-slate-900/88 z-10 backdrop-blur-[2px]">
                  <div className="max-w-4xl mx-auto flex justify-between items-center">
                      <button 
                         onClick={() => setActiveStep(prev => Math.max(0, prev - 1))}

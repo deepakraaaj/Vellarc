@@ -24,31 +24,31 @@
         }
       }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
       body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #f8fafc;
-        /* Futuristic Mesh Gradient - Light */
-        background-image: 
-          radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-          radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
-          radial-gradient(at 100% 100%, rgba(34, 211, 238, 0.15) 0px, transparent 50%),
-          radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
+        font-family: 'Manrope', sans-serif;
+        background-color: #f5f4ef;
+        background-image:
+          radial-gradient(circle at top left, rgba(99, 102, 241, 0.10), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(20, 184, 166, 0.08), transparent 22%),
+          linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+        background-size: auto, auto, 28px 28px, 28px 28px;
         background-attachment: fixed;
         min-height: 100vh;
         color: #0f172a;
         transition: background-color 0.5s ease, color 0.5s ease;
       }
 
-      /* Dark Mode Body */
       body.dark {
-        background-color: #020617; /* Slate 950 */
-        background-image: 
-          radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-          radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
-          radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
-          radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+        background-color: #0b1120;
+        background-image:
+          radial-gradient(circle at top left, rgba(99, 102, 241, 0.16), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(45, 212, 191, 0.10), transparent 20%),
+          linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+        background-size: auto, auto, 28px 28px, 28px 28px;
         color: #f8fafc;
       }
       
@@ -72,55 +72,52 @@
         animation: fadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       
-      /* Glassmorphism Utilities - Light */
       .glass {
-        background: rgba(255, 255, 255, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        box-shadow: 0 18px 45px -30px rgba(15, 23, 42, 0.25);
       }
       .glass-panel {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 
-          0 10px 40px -10px rgba(0,0,0,0.05),
-          0 0 0 1px rgba(255,255,255,0.3) inset;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        box-shadow:
+          0 22px 60px -34px rgba(15, 23, 42, 0.25),
+          0 1px 0 rgba(255,255,255,0.55) inset;
       }
 
-      /* Glassmorphism Utilities - Dark Overrides */
       body.dark .glass {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 18px 45px -28px rgba(0, 0, 0, 0.45);
       }
       body.dark .glass-panel {
-        background: rgba(15, 23, 42, 0.6); /* Slate 900 base opacity */
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 
-          0 10px 40px -10px rgba(0,0,0,0.3),
-          0 0 0 1px rgba(255,255,255,0.05) inset;
+        background: rgba(15, 23, 42, 0.84);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        box-shadow:
+          0 24px 60px -34px rgba(0,0,0,0.55),
+          0 1px 0 rgba(255,255,255,0.05) inset;
       }
 
-      /* Dark Futuristic Glass (Used for heavy emphasis or dark mode components) */
       .glass-dark {
-        background: rgba(15, 23, 42, 0.75);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        background: rgba(17, 24, 39, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.45);
         color: white;
       }
 
       .premium-input {
-        background: rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(226, 232, 240, 0.8);
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(226, 232, 240, 0.92);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .premium-input:focus {
@@ -130,31 +127,11 @@
         outline: none;
       }
 
-      /* Animations */
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-5px); }
-        100% { transform: translateY(0px); }
-      }
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
-      }
-      
-      @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
-        50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
-      }
-      .animate-pulse-glow {
-        animation: pulse-glow 3s infinite;
-      }
-      
-      @keyframes gradient-xy {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-      }
-      .animate-gradient-xy {
-        background-size: 200% 200%;
-        animation: gradient-xy 3s ease infinite;
+      @media (prefers-reduced-motion: reduce) {
+        .animate-pulse,
+        .animate-bounce {
+          animation: none !important;
+        }
       }
 
       @keyframes shine {
@@ -163,16 +140,23 @@
       }
       
       .loader {
-        border: 3px solid rgba(255,255,255,0.1);
+        border: 3px solid rgba(148,163,184,0.16);
         border-radius: 50%;
         border-top: 3px solid #6366f1;
         width: 24px;
         height: 24px;
         animation: spin 1s linear infinite;
       }
+      body.dark .loader {
+        border-color: rgba(255,255,255,0.08);
+        border-top-color: #818cf8;
+      }
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+      }
+      .mono-ui {
+        font-family: 'IBM Plex Mono', monospace;
       }
     </style>
   <script type="importmap">

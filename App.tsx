@@ -194,7 +194,9 @@ function App() {
         <div className="absolute -top-8 right-0 rounded-full bg-white/90 dark:bg-slate-950/90 border border-white/60 dark:border-white/10 px-3 py-1 backdrop-blur-md shadow-sm opacity-100 md:opacity-0 md:translate-y-1 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all duration-200 pointer-events-none">
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400 whitespace-nowrap">Chat Assistant</span>
         </div>
-        <div className="relative w-14 h-14 md:w-[3.75rem] md:h-[3.75rem] rounded-full bg-white/92 dark:bg-slate-950/92 border border-white/70 dark:border-white/10 shadow-[0_20px_45px_-18px_rgba(15,23,42,0.5)] backdrop-blur-xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_25px_60px_-16px_rgba(99,102,241,0.5)]">
+        <div
+          className="relative w-14 h-14 md:w-[3.75rem] md:h-[3.75rem] rounded-full bg-white/92 dark:bg-slate-950/92 border border-white/70 dark:border-white/10 shadow-[0_20px_45px_-18px_rgba(15,23,42,0.5)] backdrop-blur-xl flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_25px_60px_-16px_rgba(99,102,241,0.5)]"
+        >
           <img
             src="/specarc-mark.svg"
             alt="SpecArc AI"
