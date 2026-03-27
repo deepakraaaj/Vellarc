@@ -11,7 +11,7 @@ interface ProjectEditorProps {
 
 const steps = [
   { id: 'basic', label: 'Basic Info', icon: <Flag size={20} /> },
-  { id: 'problem', label: 'Problem & Competitors', icon: <AlertCircle size={20} /> },
+  { id: 'problem', label: 'Problem Space', icon: <AlertCircle size={20} /> },
   { id: 'personas', label: 'Audience & KPIs', icon: <User size={20} /> },
   { id: 'colors', label: 'Branding', icon: <Palette size={20} /> },
   { id: 'stories', label: 'User Stories', icon: <Book size={20} /> },
@@ -943,30 +943,30 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                     <div className="glass-panel p-6 rounded-2xl border-l-4 border-indigo-500 bg-indigo-50/10 dark:bg-indigo-900/10">
                          <div className="flex items-center gap-3 mb-4">
                              <Globe className="text-indigo-600 dark:text-indigo-400" size={24} />
-                             <h3 className="font-bold text-lg text-gray-900 dark:text-white">Frontend / Core</h3>
+                             <h3 className="font-bold text-lg text-gray-900 dark:text-white">Environment & Services</h3>
                          </div>
-                         <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide">Key Technologies</label>
+                         <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide">Runtime Stack</label>
                          <AutoTextArea 
                             value={project.deployment.environment}
                             onChange={e => setProject({...project, deployment: {...project.deployment, environment: e.target.value}})}
-                            placeholder="e.g. React, Next.js, Tailwind..."
-                            className="bg-transparent text-lg font-medium border-b border-indigo-100 dark:border-indigo-900 focus:border-indigo-500 rounded-none px-0 shadow-none hover:shadow-none hover:bg-transparent"
-                            rows={2}
+                            placeholder="e.g. Node.js 20, PostgreSQL, Redis..."
+                            className="bg-transparent text-lg font-medium leading-relaxed border-0 border-b border-indigo-200/70 dark:border-indigo-900 focus:ring-0 focus:border-indigo-500 rounded-none px-0 py-3 shadow-none hover:shadow-none hover:bg-transparent"
+                            rows={1}
                         />
                     </div>
 
                     <div className="glass-panel p-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50/10 dark:bg-emerald-900/10">
                          <div className="flex items-center gap-3 mb-4">
                              <Database className="text-emerald-600 dark:text-emerald-400" size={24} />
-                             <h3 className="font-bold text-lg text-gray-900 dark:text-white">Backend & Data</h3>
+                             <h3 className="font-bold text-lg text-gray-900 dark:text-white">Hosting & Infrastructure</h3>
                          </div>
-                         <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide">Infrastructure</label>
+                         <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide">Platforms</label>
                          <StyledInput 
                             type="text" 
                             value={project.deployment.platform}
                             onChange={e => setProject({...project, deployment: {...project.deployment, platform: e.target.value}})}
-                            placeholder="e.g. AWS RDS, Vercel, Node.js..."
-                            className="bg-transparent text-lg font-medium border-b border-emerald-100 dark:border-emerald-900 focus:border-emerald-500 rounded-none px-0 shadow-none hover:shadow-none hover:bg-transparent"
+                            placeholder="e.g. Vercel, AWS RDS, Cloudflare..."
+                            className="bg-transparent text-lg font-medium border-0 border-b border-emerald-200/70 dark:border-emerald-900 focus:ring-0 focus:border-emerald-500 rounded-none px-0 py-3 shadow-none hover:shadow-none hover:bg-transparent"
                         />
                     </div>
                  </div>
@@ -1020,7 +1020,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Navigation Sidebar */}
-        <div className="w-72 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-r border-white/50 dark:border-white/10 overflow-y-auto hidden md:block custom-scrollbar">
+        <div className="w-80 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-r border-white/50 dark:border-white/10 overflow-y-auto hidden md:block custom-scrollbar">
             <div className="p-6">
                 <p className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-6 pl-2">Configuration</p>
                 <div className="space-y-2 pb-8">
@@ -1028,18 +1028,20 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                         <button
                             key={step.id}
                             onClick={() => setActiveStep(index)}
-                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold text-left transition-all duration-300 ${
                                 activeStep === index 
                                 ? 'bg-white dark:bg-slate-800 shadow-md text-indigo-600 dark:text-indigo-400 border border-white/60 dark:border-slate-700 translate-x-1' 
                                 : 'text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
                             }`}
                         >
-                            <span className={`transition-colors duration-300 ${activeStep === index ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
+                            <span className={`shrink-0 transition-colors duration-300 ${activeStep === index ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
                                 {step.icon}
                             </span>
-                            {step.label}
+                            <span className="min-w-0 flex-1 leading-snug">
+                                {step.label}
+                            </span>
                             {index < activeStep && (
-                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0"></div>
                             )}
                         </button>
                     ))}

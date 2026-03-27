@@ -1,38 +1,101 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# DocuMaster
 
-# Run and deploy your AI Studio app
+DocuMaster is a polished React + Vite frontend for turning rough product ideas into structured software documentation. The current app lets users create a project manually, refine it in a guided editor, review a presentation-style project view, or generate an initial draft with Gemini-powered chat.
 
-This contains everything you need to run your app locally.
+This repository currently contains the frontend prototype and local mock data. Project data lives in React state, so changes are not persisted across reloads.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1xrpj0G-krJOclq74ceMhzmhlHznzOUuQ
+## What the App Includes
 
-## Run Locally
+- A dashboard for browsing projects and starting new work
+- A multi-step editor for product basics, problem framing, personas, metrics, features, design, testing, and deployment
+- A presentation view for reviewing completed project documentation
+- An AI wizard that interviews the user and generates a structured project object with Gemini
+- Dark mode support and a highly styled glassmorphism UI
 
-**Prerequisites:**  Node.js
+## Tech Stack
 
+- React 19
+- TypeScript
+- Vite
+- `@google/genai`
+- `lucide-react`
+- Tailwind via CDN in `index.html`
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Getting Started
 
-## Spec-Driven Workflow
+### Prerequisites
 
-This project uses `spec-kit` with Codex prompts stored in [.codex/prompts](.codex/prompts)
-and shared templates in [.specify](.specify).
+- Node.js 18+ recommended
+- An npm-compatible environment
+- A Gemini API key if you want to use the AI wizard
 
-1. Export the project-specific Codex home:
-   `export CODEX_HOME='/home/deepakrajb/Downloads/documaster (1)/.codex'`
-2. Establish or amend governance:
-   `/speckit.constitution`
-3. Create a feature specification:
-   `/speckit.specify`
-4. Create the implementation plan:
-   `/speckit.plan`
-5. Break the work into tasks:
-   `/speckit.tasks`
-6. Execute the implementation:
-   `/speckit.implement`
+### Install
+
+```bash
+npm install
+```
+
+### Configure Environment
+
+Create a `.env.local` file in the project root:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+Vite maps `GEMINI_API_KEY` to the client-side values used by the app.
+
+### Run Locally
+
+```bash
+npm run dev
+```
+
+The dev server is configured for `http://0.0.0.0:3000`.
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+### Preview the Production Build
+
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```text
+.
+├── App.tsx                 # Top-level app state and view switching
+├── components/
+│   ├── AIWizard.tsx        # Gemini-assisted project generation
+│   ├── Dashboard.tsx       # Project library and entry points
+│   ├── ProjectEditor.tsx   # Multi-step manual editing flow
+│   ├── ProjectView.tsx     # Presentation-style project details view
+│   └── Sidebar.tsx         # Navigation and theme toggle
+├── mockData.ts             # Seed project shown on first load
+├── types.ts                # Shared project data model
+├── updated_prd.md          # Product direction for DocuMaster v2
+├── v2_data_model.md        # Proposed v2 data model
+└── v2_ux_flow_spec.md      # Proposed v2 UX flow
+```
+
+## Notes and Current Limitations
+
+- Data is stored only in local component state
+- Search on the dashboard is currently visual only
+- There is no backend, auth flow, or database integration yet
+- There is no automated test suite configured yet
+
+## Product Direction
+
+The repo also includes planning documents for a broader DocuMaster v2 pivot: evolving from a documentation builder into an AI product architect workspace that turns vague ideas into build-ready context, architecture guidance, phased plans, and prompt packs.
+
+If you want to continue that direction, start with:
+
+- `updated_prd.md`
+- `v2_data_model.md`
+- `v2_ux_flow_spec.md`
