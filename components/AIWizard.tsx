@@ -5,7 +5,7 @@ import { Project } from '../types';
 
 interface AIWizardProps {
   onCancel: () => void;
-  onProjectGenerated: (project: Omit<Project, 'id' | 'lastUpdated'>) => void;
+  onProjectGenerated: (project: Omit<Project, 'id' | 'lastUpdated'>) => Promise<void> | void;
 }
 
 interface Message {
@@ -173,7 +173,8 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
 
   useEffect(() => {
     try {
-      const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+      const apiKey =
+        import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY || process.env.GEMINI_API_KEY;
 
       if (!apiKey) {
         setInitError('SpecArc AI is not configured yet. Add GEMINI_API_KEY in .env.local to enable chat.');
@@ -231,7 +232,7 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
                 projectData.userStories = projectData.userStories?.map((u: any) => ({...u, id: u.id || Math.random().toString()})) || [];
                 projectData.competitors = projectData.competitors?.map((c: any) => ({...c, id: c.id || Math.random().toString()})) || [];
                 
-                onProjectGenerated(projectData);
+                await onProjectGenerated(projectData);
                 return;
             }
         }

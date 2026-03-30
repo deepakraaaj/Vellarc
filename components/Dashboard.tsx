@@ -89,52 +89,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ projects, onNewProject, on
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project) => (
-          <div
-            key={project.id}
-            onClick={() => onSelectProject(project)}
-            className="group glass-panel rounded-[2rem] p-7 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 dark:hover:border-indigo-500/30"
+      {projects.length === 0 ? (
+        <div className="glass-panel rounded-[2rem] border border-dashed border-slate-300/80 px-8 py-14 text-center shadow-sm dark:border-slate-700">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+            <Layers size={26} />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">No projects yet</h3>
+          <p className="mx-auto mt-3 max-w-xl text-base text-gray-500 dark:text-gray-400">
+            Start your first project and it will appear here as soon as you save it.
+          </p>
+          <button
+            onClick={onNewProject}
+            className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gray-950 px-6 py-3 font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
           >
-            <div className="flex flex-col h-full">
-              <div className="flex justify-between items-start mb-8">
-                <div className="flex flex-col gap-1">
-                  <span className="mono-ui text-[10px] font-semibold text-gray-400 uppercase tracking-[0.16em]">Last updated</span>
-                  <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">{project.lastUpdated}</span>
+            <Plus size={18} />
+            <span>Create Project</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              onClick={() => onSelectProject(project)}
+              className="group glass-panel rounded-[2rem] p-7 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 dark:hover:border-indigo-500/30"
+            >
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex flex-col gap-1">
+                    <span className="mono-ui text-[10px] font-semibold text-gray-400 uppercase tracking-[0.16em]">Last updated</span>
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">{project.lastUpdated}</span>
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700 transition-colors group-hover:bg-indigo-50 group-hover:border-indigo-100 dark:group-hover:bg-indigo-500/10 dark:group-hover:border-indigo-500/30">
+                    <ArrowUpRight size={18} className="text-indigo-600 dark:text-indigo-400 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </div>
                 </div>
-                <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700 transition-colors group-hover:bg-indigo-50 group-hover:border-indigo-100 dark:group-hover:bg-indigo-500/10 dark:group-hover:border-indigo-500/30">
-                  <ArrowUpRight size={18} className="text-indigo-600 dark:text-indigo-400 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </div>
-              </div>
 
-              <div className="mb-8">
-                <h3 className="text-[1.7rem] font-bold text-gray-900 dark:text-white mb-2 tracking-tight">{project.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">{project.tagline}</p>
-              </div>
+                <div className="mb-8">
+                  <h3 className="text-[1.7rem] font-bold text-gray-900 dark:text-white mb-2 tracking-tight">{project.title}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-3">{project.tagline}</p>
+                </div>
 
-              <div className="mt-auto pt-5 border-t border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-4">
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
-                    {project.features.length} features
-                  </span>
-                  <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
-                    {project.userStories.length} stories
+                <div className="mt-auto pt-5 border-t border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-4">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
+                      {project.features.length} features
+                    </span>
+                    <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
+                      {project.userStories.length} stories
+                    </span>
+                  </div>
+                  <span className={`px-3 py-1.5 rounded-full text-[11px] font-bold tracking-[0.14em] uppercase border ${
+                    project.status === 'In Review'
+                      ? 'bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-500/30'
+                      : project.status === 'Approved'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/30'
+                        : 'bg-slate-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-slate-700'
+                  }`}>
+                    {project.status}
                   </span>
                 </div>
-                <span className={`px-3 py-1.5 rounded-full text-[11px] font-bold tracking-[0.14em] uppercase border ${
-                  project.status === 'In Review'
-                    ? 'bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-500/30'
-                    : project.status === 'Approved'
-                      ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/30'
-                      : 'bg-slate-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-slate-200 dark:border-slate-700'
-                }`}>
-                  {project.status}
-                </span>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

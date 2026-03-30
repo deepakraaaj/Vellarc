@@ -5,7 +5,8 @@ import { Check, ChevronRight, Save, AlertCircle, User, Palette, Flag, Zap, PenTo
 interface ProjectEditorProps {
   project: Project;
   initialStep?: string;
-  onSave: (project: Project) => void;
+  isSaving?: boolean;
+  onSave: (project: Project) => Promise<void> | void;
   onCancel: () => void;
 }
 
@@ -96,7 +97,13 @@ const ColoredInputBlock = ({
     );
 };
 
-export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialProject, initialStep = 'basic', onSave, onCancel }) => {
+export const ProjectEditor: React.FC<ProjectEditorProps> = ({
+  project: initialProject,
+  initialStep = 'basic',
+  isSaving = false,
+  onSave,
+  onCancel,
+}) => {
   const [project, setProject] = useState<Project>(initialProject);
   const [activeStep, setActiveStep] = useState(0);
 
@@ -106,8 +113,16 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
     if (idx !== -1) setActiveStep(idx);
   }, [initialStep]);
 
+  useEffect(() => {
+    setProject(initialProject);
+  }, [initialProject]);
+
   const handleNext = () => {
     if (activeStep < steps.length - 1) setActiveStep(prev => prev + 1);
+  };
+
+  const handleSave = async () => {
+    await onSave(project);
   };
 
   const renderStepContent = () => {
@@ -1006,13 +1021,13 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
             <p className="text-sm md:text-base text-indigo-700 dark:text-indigo-300 font-bold truncate max-w-[150px] md:max-w-xs">{project.title || 'Untitled'}</p>
         </div>
         <div className="flex gap-2 md:gap-4">
-            <button onClick={onCancel} className="px-3 md:px-6 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm md:text-base border border-transparent hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm">
+            <button disabled={isSaving} onClick={onCancel} className="px-3 md:px-6 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm md:text-base border border-transparent hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
                 Discard
             </button>
-            <button onClick={() => onSave(project)} className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-bold text-sm md:text-base shadow-lg shadow-indigo-100 dark:shadow-none hover:-translate-y-0.5 transform duration-200">
-                <Save size={18} />
-                <span className="hidden md:inline">Save & View</span>
-                <span className="md:hidden">Save</span>
+            <button disabled={isSaving} onClick={handleSave} className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-bold text-sm md:text-base shadow-lg shadow-indigo-100 dark:shadow-none hover:-translate-y-0.5 transform duration-200 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70">
+                <Save size={18} className={isSaving ? 'animate-pulse' : ''} />
+                <span className="hidden md:inline">{isSaving ? 'Saving...' : 'Save & View'}</span>
+                <span className="md:hidden">{isSaving ? 'Saving...' : 'Save'}</span>
             </button>
         </div>
       </div>

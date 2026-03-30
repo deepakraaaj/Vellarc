@@ -2,7 +2,7 @@
 
 SpecArc is a polished React + Vite frontend for turning rough product ideas into build-ready product briefs, architecture context, and software planning. The current app lets users create a project manually, refine it in a guided editor, review a presentation-style project view, or generate an initial draft with Gemini-powered chat.
 
-This repository currently contains the frontend prototype and local mock data. Project data lives in React state, so changes are not persisted across reloads.
+This repository currently contains the frontend prototype and a lightweight Supabase-backed persistence layer. When Supabase is configured, project saves are stored in your database. When it is not configured yet, the app falls back to local demo data so the UI still works.
 
 ## What the App Includes
 
@@ -18,6 +18,7 @@ This repository currently contains the frontend prototype and local mock data. P
 - TypeScript
 - Vite
 - `@google/genai`
+- `@supabase/supabase-js`
 - `lucide-react`
 - Tailwind via CDN in `index.html`
 
@@ -41,9 +42,23 @@ Create a `.env.local` file in the project root:
 
 ```env
 GEMINI_API_KEY=your_api_key_here
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
-Vite maps `GEMINI_API_KEY` to the client-side values used by the app.
+You can also use `VITE_GEMINI_API_KEY` if you prefer standard Vite-prefixed client env vars.
+
+An `.env.example` file is included in the repo with the expected keys.
+
+### Set Up Supabase
+
+1. Create a Supabase project.
+2. Open the Supabase SQL Editor.
+3. Run [`supabase/projects.sql`](/home/user/Desktop/Vellarc/supabase/projects.sql).
+4. Copy your project URL and anon key into `.env.local`.
+5. Restart `npm run dev`.
+
+The SQL file creates a `projects` table, keeps `updated_at` fresh on every update, and adds prototype-friendly RLS policies so the browser client can read and write. Tighten those policies before using this in production.
 
 ### Run Locally
 
@@ -70,13 +85,20 @@ npm run preview
 ```text
 .
 ├── App.tsx                 # Top-level app state and view switching
+├── .env.example            # Example local environment variables
 ├── components/
 │   ├── AIWizard.tsx        # Gemini-assisted project generation
 │   ├── Dashboard.tsx       # Project library and entry points
 │   ├── ProjectEditor.tsx   # Multi-step manual editing flow
 │   ├── ProjectView.tsx     # Presentation-style project details view
 │   └── Sidebar.tsx         # Navigation and theme toggle
+├── lib/
+│   ├── projectStore.ts     # Supabase project fetch/save helpers
+│   ├── projectUtils.ts     # Project cloning, IDs, and save preparation
+│   └── supabase.ts         # Supabase client bootstrap
 ├── mockData.ts             # Seed project shown on first load
+├── supabase/
+│   └── projects.sql        # SQL schema and RLS policies for the `projects` table
 ├── types.ts                # Shared project data model
 ├── updated_prd.md          # Product direction for SpecArc v2
 ├── v2_data_model.md        # Proposed v2 data model
@@ -85,9 +107,9 @@ npm run preview
 
 ## Notes and Current Limitations
 
-- Data is stored only in local component state
+- Supabase access is currently browser-side and uses prototype-friendly public policies
 - Search on the dashboard is currently visual only
-- There is no backend, auth flow, or database integration yet
+- There is no auth flow yet, so the included Supabase policies are intentionally broad for prototyping
 - There is no automated test suite configured yet
 
 ## Product Direction
