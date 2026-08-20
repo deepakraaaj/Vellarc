@@ -1,9 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Project } from '../types';
 import { Check, ChevronRight, Save, AlertCircle, User, Palette, Flag, Zap, PenTool, TestTube, Server, Book, Plus, X, Trash2, ExternalLink, Target, Swords, Database, Globe, Cpu, Loader2, Boxes } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
-import { layoutArchitecture } from '../lib/architecture';
-
 // ReactFlow is a large dependency only needed on this one step, so it's
 // code-split out of the main editor bundle.
 const ArchitectureCanvas = lazy(() =>
@@ -751,20 +748,6 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                  <ArchitectureCanvas
                     value={project.architecture ?? { nodes: [], edges: [] }}
                     onChange={(architecture) => setProject({ ...project, architecture })}
-                    onSuggest={async () => {
-                      const { data, error } = await supabase.functions.invoke('generate-architecture', {
-                        body: {
-                          title: project.title,
-                          tagline: project.tagline,
-                          problemOverview: project.problemStatement?.overview,
-                          features: project.features,
-                        },
-                      });
-                      if (error) throw error;
-                      if (data?.error) throw new Error(data.error);
-                      if (!data?.architecture) return null;
-                      return layoutArchitecture(data.architecture.nodes ?? [], data.architecture.edges ?? []);
-                    }}
                  />
                </Suspense>
              </div>

@@ -16,7 +16,7 @@ import {
   type OnEdgesChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Plus, Sparkles, Loader2, Trash2, Boxes, X } from 'lucide-react';
+import { Plus, Trash2, Boxes, X } from 'lucide-react';
 import { Architecture, ArchitectureNodeType } from '../../types';
 import { architectureToFlow, flowToArchitecture, makeId } from '../../lib/architecture';
 import { useIsDarkMode } from '../../lib/useIsDarkMode';
@@ -28,16 +28,13 @@ const nodeTypes = { archNode: DiagramNode };
 interface ArchitectureCanvasProps {
   value: Architecture;
   onChange: (arch: Architecture) => void;
-  onSuggest?: () => Promise<Architecture | null>;
 }
 
-const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSuggest }) => {
+const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange }) => {
   const initial = useMemo(() => architectureToFlow(value), []); // eslint-disable-line react-hooks/exhaustive-deps
   const [nodes, setNodes] = useState<Node<DiagramNodeData>[]>(initial.nodes);
   const [edges, setEdges] = useState<Edge[]>(initial.edges);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isSuggesting, setIsSuggesting] = useState(false);
-  const [suggestError, setSuggestError] = useState<string | null>(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
   const isDarkMode = useIsDarkMode();
@@ -143,26 +140,6 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
     [selectedId, edges, syncUp]
   );
 
-  const handleSuggest = async () => {
-    if (!onSuggest || isSuggesting) return;
-    setIsSuggesting(true);
-    setSuggestError(null);
-    try {
-      const result = await onSuggest();
-      if (result) {
-        const flow = architectureToFlow(result);
-        setNodes(flow.nodes);
-        setEdges(flow.edges);
-        syncUp(flow.nodes, flow.edges);
-      }
-    } catch (err) {
-      console.error('Architecture suggestion failed:', err);
-      setSuggestError('Could not generate a suggestion. Please try again.');
-    } finally {
-      setIsSuggesting(false);
-    }
-  };
-
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
 
   return (
@@ -228,33 +205,16 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
               </div>
             )}
           </div>
-
-          {onSuggest && (
-            <button
-              onClick={handleSuggest}
-              disabled={isSuggesting}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl shadow-md font-bold text-sm disabled:opacity-60 transition-all"
-            >
-              {isSuggesting ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-              {isSuggesting ? 'Thinking...' : 'Suggest with AI'}
-            </button>
-          )}
         </div>
 
-        {suggestError && (
-          <div className="absolute bottom-3 left-3 right-3 z-10 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl px-3 py-2">
-            {suggestError}
-          </div>
-        )}
-
-        {nodes.length === 0 && !isSuggesting && (
+        {nodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center px-6">
               <div className="mx-auto mb-3 w-12 h-12 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-white/60 dark:border-white/10 flex items-center justify-center">
                 <Boxes size={22} className="text-gray-400" />
               </div>
               <p className="text-sm font-bold text-gray-500 dark:text-gray-400">No components yet</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Add a component or ask AI to suggest an architecture.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Add a component to start mapping the architecture.</p>
             </div>
           </div>
         )}
