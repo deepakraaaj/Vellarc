@@ -736,8 +736,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
         );
       case 'architecture':
         return (
-          <div className="space-y-8 fade-in">
-             <div className="flex items-center gap-6 mb-8 md:mb-10 pb-6 md:pb-8 border-b border-gray-100/50 dark:border-white/10">
+          <div className="h-full flex flex-col fade-in">
+             <div className="shrink-0 flex items-center gap-6 mb-6 pb-6 border-b border-gray-100/50 dark:border-white/10">
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-white/50 dark:bg-slate-800/50 backdrop-blur rounded-2xl flex items-center justify-center text-cyan-600 dark:text-cyan-400 shadow-lg shadow-cyan-100 dark:shadow-none border border-white dark:border-white/10 shrink-0">
                     <Boxes size={32} />
                 </div>
@@ -746,26 +746,28 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                     <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 mt-2">Map out the major components and how they connect.</p>
                 </div>
              </div>
-             <Suspense fallback={<div className="h-[calc(100vh-230px)] min-h-[640px] rounded-2xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 flex items-center justify-center text-sm font-bold text-gray-400">Loading canvas...</div>}>
-               <ArchitectureCanvas
-                  value={project.architecture ?? { nodes: [], edges: [] }}
-                  onChange={(architecture) => setProject({ ...project, architecture })}
-                  onSuggest={async () => {
-                    const { data, error } = await supabase.functions.invoke('generate-architecture', {
-                      body: {
-                        title: project.title,
-                        tagline: project.tagline,
-                        problemOverview: project.problemStatement?.overview,
-                        features: project.features,
-                      },
-                    });
-                    if (error) throw error;
-                    if (data?.error) throw new Error(data.error);
-                    if (!data?.architecture) return null;
-                    return layoutArchitecture(data.architecture.nodes ?? [], data.architecture.edges ?? []);
-                  }}
-               />
-             </Suspense>
+             <div className="flex-1 min-h-0">
+               <Suspense fallback={<div className="h-full min-h-[420px] rounded-2xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 flex items-center justify-center text-sm font-bold text-gray-400">Loading canvas...</div>}>
+                 <ArchitectureCanvas
+                    value={project.architecture ?? { nodes: [], edges: [] }}
+                    onChange={(architecture) => setProject({ ...project, architecture })}
+                    onSuggest={async () => {
+                      const { data, error } = await supabase.functions.invoke('generate-architecture', {
+                        body: {
+                          title: project.title,
+                          tagline: project.tagline,
+                          problemOverview: project.problemStatement?.overview,
+                          features: project.features,
+                        },
+                      });
+                      if (error) throw error;
+                      if (data?.error) throw new Error(data.error);
+                      if (!data?.architecture) return null;
+                      return layoutArchitecture(data.architecture.nodes ?? [], data.architecture.edges ?? []);
+                    }}
+                 />
+               </Suspense>
+             </div>
           </div>
         );
       case 'design':
@@ -1097,20 +1099,38 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
             <div className="flex-1 flex flex-col relative overflow-hidden bg-white/38 dark:bg-slate-900/38">
             
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-10 scroll-smooth">
-                <div className={`mx-auto min-h-[500px] flex flex-col pb-32 ${steps[activeStep].id === 'architecture' ? 'max-w-[1600px]' : 'max-w-4xl'}`}>
-                    {/* Steps Progress (Mobile only) */}
-                    <div className="md:hidden mb-6 overflow-x-auto flex gap-1 pb-2 no-scrollbar">
-                        {steps.map((step, i) => (
-                            <div key={i} className={`h-1.5 flex-1 min-w-[2rem] rounded-full flex-shrink-0 transition-colors ${i <= activeStep ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-slate-700'}`} />
-                        ))}
-                    </div>
-
-                    <div className="flex-1">
-                        {renderStepContent()}
+            {steps[activeStep].id === 'architecture' ? (
+                // The canvas manages its own space (and its own pan/zoom scrolling),
+                // so this step gets a non-scrolling flex container sized to fit
+                // exactly — no extra page scroll below the diagram.
+                <div className="flex-1 min-h-0 overflow-hidden p-4 md:p-8 pb-24 md:pb-28">
+                    <div className="mx-auto w-full max-w-[1600px] h-full flex flex-col">
+                        <div className="md:hidden mb-4 shrink-0 overflow-x-auto flex gap-1 pb-2 no-scrollbar">
+                            {steps.map((step, i) => (
+                                <div key={i} className={`h-1.5 flex-1 min-w-[2rem] rounded-full flex-shrink-0 transition-colors ${i <= activeStep ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-slate-700'}`} />
+                            ))}
+                        </div>
+                        <div className="flex-1 min-h-0">
+                            {renderStepContent()}
+                        </div>
                     </div>
                 </div>
-            </div>
+            ) : (
+                <div className="flex-1 overflow-y-auto p-4 md:p-10 scroll-smooth">
+                    <div className="mx-auto min-h-[500px] flex flex-col pb-32 max-w-4xl">
+                        {/* Steps Progress (Mobile only) */}
+                        <div className="md:hidden mb-6 overflow-x-auto flex gap-1 pb-2 no-scrollbar">
+                            {steps.map((step, i) => (
+                                <div key={i} className={`h-1.5 flex-1 min-w-[2rem] rounded-full flex-shrink-0 transition-colors ${i <= activeStep ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-slate-700'}`} />
+                            ))}
+                        </div>
+
+                        <div className="flex-1">
+                            {renderStepContent()}
+                        </div>
+                    </div>
+                </div>
+            )}
             
             {/* Floating Navigation - Fixed to bottom of Wrapper */}
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-white/96 via-white/88 to-transparent dark:from-slate-900/96 dark:via-slate-900/88 z-10 backdrop-blur-[2px]">

@@ -164,7 +164,7 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
 
   return (
-    <div className="h-[calc(100vh-230px)] min-h-[640px]">
+    <div className="h-full min-h-[420px]">
       {/* Canvas */}
       <div ref={wrapperRef} className="relative w-full h-full rounded-2xl overflow-hidden border border-white/60 dark:border-white/10 bg-slate-50/60 dark:bg-slate-950/40">
         <ReactFlow
