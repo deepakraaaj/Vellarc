@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Project } from '../types';
-import { Check, ChevronRight, Save, AlertCircle, User, Palette, Flag, Zap, PenTool, TestTube, Server, Book, Plus, X, Trash2, ExternalLink, Target, Swords, Database, Globe, Cpu, Loader2 } from 'lucide-react';
+import { Check, ChevronRight, Save, AlertCircle, User, Palette, Flag, Zap, PenTool, TestTube, Server, Book, Plus, X, Trash2, ExternalLink, Target, Swords, Database, Globe, Cpu, Loader2, Boxes } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { layoutArchitecture } from '../lib/architecture';
+
+// ReactFlow is a large dependency only needed on this one step, so it's
+// code-split out of the main editor bundle.
+const ArchitectureCanvas = lazy(() =>
+  import('./Architecture/ArchitectureCanvas').then((m) => ({ default: m.ArchitectureCanvas }))
+);
 
 interface ProjectEditorProps {
   project: Project;
@@ -17,6 +25,7 @@ const steps = [
   { id: 'colors', label: 'Branding', icon: <Palette size={20} /> },
   { id: 'stories', label: 'User Stories', icon: <Book size={20} /> },
   { id: 'features', label: 'Features', icon: <Zap size={20} /> },
+  { id: 'architecture', label: 'Architecture', icon: <Boxes size={20} /> },
   { id: 'design', label: 'Design System', icon: <PenTool size={20} /> },
   { id: 'testing', label: 'Testing', icon: <TestTube size={20} /> },
   { id: 'deployment', label: 'Technology Stack', icon: <Server size={20} /> },
@@ -723,6 +732,40 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                    </div>
                 ))}
              </div>
+          </div>
+        );
+      case 'architecture':
+        return (
+          <div className="space-y-8 fade-in">
+             <div className="flex items-center gap-6 mb-8 md:mb-10 pb-6 md:pb-8 border-b border-gray-100/50 dark:border-white/10">
+                <div className="w-14 h-14 md:w-16 md:h-16 bg-white/50 dark:bg-slate-800/50 backdrop-blur rounded-2xl flex items-center justify-center text-cyan-600 dark:text-cyan-400 shadow-lg shadow-cyan-100 dark:shadow-none border border-white dark:border-white/10 shrink-0">
+                    <Boxes size={32} />
+                </div>
+                <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">System Architecture</h2>
+                    <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 mt-2">Map out the major components and how they connect.</p>
+                </div>
+             </div>
+             <Suspense fallback={<div className="h-[560px] rounded-2xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 flex items-center justify-center text-sm font-bold text-gray-400">Loading canvas...</div>}>
+               <ArchitectureCanvas
+                  value={project.architecture ?? { nodes: [], edges: [] }}
+                  onChange={(architecture) => setProject({ ...project, architecture })}
+                  onSuggest={async () => {
+                    const { data, error } = await supabase.functions.invoke('generate-architecture', {
+                      body: {
+                        title: project.title,
+                        tagline: project.tagline,
+                        problemOverview: project.problemStatement?.overview,
+                        features: project.features,
+                      },
+                    });
+                    if (error) throw error;
+                    if (data?.error) throw new Error(data.error);
+                    if (!data?.architecture) return null;
+                    return layoutArchitecture(data.architecture.nodes ?? [], data.architecture.edges ?? []);
+                  }}
+               />
+             </Suspense>
           </div>
         );
       case 'design':

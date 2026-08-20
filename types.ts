@@ -45,6 +45,38 @@ export interface SuccessMetric {
   target: string;
 }
 
+export type ArchitectureNodeType =
+  | 'client'
+  | 'frontend'
+  | 'backend'
+  | 'api'
+  | 'database'
+  | 'cache'
+  | 'queue'
+  | 'auth'
+  | 'storage'
+  | 'external';
+
+export interface ArchitectureNode {
+  id: string;
+  type: ArchitectureNodeType;
+  label: string;
+  description?: string;
+  position: { x: number; y: number };
+}
+
+export interface ArchitectureEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+}
+
+export interface Architecture {
+  nodes: ArchitectureNode[];
+  edges: ArchitectureEdge[];
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -75,6 +107,7 @@ export interface Project {
     wireframesUrl: string;
     mockupsUrl: string;
   };
+  architecture?: Architecture;
   testing: {
     strategy: string;
     cases: { id: string; name: string; description: string; expected: string }[];

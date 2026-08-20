@@ -8,6 +8,7 @@
 // requests carrying a signed-in user's access token reach this code.
 
 import { GoogleGenAI, Type, type FunctionDeclaration } from 'npm:@google/genai@^1.31.0';
+import { architectureSchema } from '../_shared/architectureTool.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -149,6 +150,7 @@ const createProjectTool: FunctionDeclaration = {
         },
         required: ['platform', 'strategy', 'environment'],
       },
+      architecture: architectureSchema,
     },
     required: ['title', 'problemStatement', 'features', 'deployment', 'personas', 'successMetrics', 'colorPalette', 'design', 'testing'],
   },
@@ -166,7 +168,9 @@ Goal:
 - Start by asking for the project concept.
 - Then ask for the target user.
 - Then features.
-- Then infer the rest (tech stack, metrics, testing) using your "advanced algorithms".
+- Then infer the rest (tech stack, metrics, testing, and a system architecture
+  diagram of 5-9 major components with sensible connections) using your
+  "advanced algorithms".
 - Finally, call 'create_project'.
 
 Do not output JSON text. Use the tool.`;

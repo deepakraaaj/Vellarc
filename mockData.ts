@@ -120,5 +120,26 @@ export const initialProject: Project = {
     platform: 'Vercel / AWS RDS',
     strategy: 'CI/CD pipeline via GitHub Actions. Staging environment for PR reviews.',
     environment: 'Node.js 18, PostgreSQL, Redis'
-  }
+  },
+  architecture: {
+    nodes: [
+      { id: 'client', type: 'client', label: 'Web & Mobile Client', description: 'React + React Native clients', position: { x: 0, y: -60 } },
+      { id: 'frontend', type: 'frontend', label: 'Frontend App', description: 'Task dashboards and workload views', position: { x: 260, y: -60 } },
+      { id: 'auth', type: 'auth', label: 'Auth Service', description: 'Handles login and team permissions', position: { x: 260, y: 120 } },
+      { id: 'api', type: 'api', label: 'API Gateway', description: 'Routes requests to backend services', position: { x: 520, y: 0 } },
+      { id: 'backend', type: 'backend', label: 'Task Service', description: 'Core task and workload business logic', position: { x: 780, y: -80 } },
+      { id: 'cache', type: 'cache', label: 'Redis Cache', description: 'Caches workload and dashboard queries', position: { x: 1040, y: -80 } },
+      { id: 'database', type: 'database', label: 'PostgreSQL', description: 'Primary task and user data store', position: { x: 1040, y: 60 } },
+      { id: 'slack', type: 'external', label: 'Slack Integration', description: 'Sends task notifications to Slack', position: { x: 780, y: 160 } },
+    ],
+    edges: [
+      { id: 'e1', source: 'client', target: 'frontend' },
+      { id: 'e2', source: 'frontend', target: 'api' },
+      { id: 'e3', source: 'frontend', target: 'auth', label: 'sign in' },
+      { id: 'e4', source: 'api', target: 'backend' },
+      { id: 'e5', source: 'backend', target: 'cache' },
+      { id: 'e6', source: 'backend', target: 'database' },
+      { id: 'e7', source: 'backend', target: 'slack', label: 'webhook' },
+    ],
+  },
 };

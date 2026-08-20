@@ -10,6 +10,7 @@ Auth and data persistence are backed by [Supabase](https://supabase.com): every 
 - A multi-step editor for product basics, problem framing, personas, metrics, features, design, testing, and deployment
 - A presentation view for reviewing completed project documentation, including delete
 - A floating AI chat assistant that interviews the user and generates a structured project object with Gemini
+- An interactive [React Flow](https://reactflow.dev)-based **system architecture diagram**: add/connect components by hand, or let AI propose one from the project brief (see below)
 - Dark mode support and a highly styled glassmorphism UI
 - Email/password sign-in via Supabase Auth, gating the whole app
 
@@ -18,7 +19,8 @@ Auth and data persistence are backed by [Supabase](https://supabase.com): every 
 - **Frontend**: React 19 + Vite, client-only SPA.
 - **Auth**: Supabase Auth (email/password). Every route is gated behind a signed-in session (`App.tsx` renders `AuthScreen` until `useAuth()` resolves a user). Google OAuth is wired in `contexts/AuthContext.tsx` but currently disabled in the UI — see [components/Auth/AuthScreen.tsx](components/Auth/AuthScreen.tsx) to re-enable it.
 - **Data**: Projects are stored in Supabase Postgres (`public.projects`), one row per project, scoped to the owning user via Row Level Security — see [`supabase/schema.sql`](supabase/schema.sql).
-- **AI**: The Gemini chat used by the AI assistant runs behind a Supabase Edge Function ([`supabase/functions/gemini-chat`](supabase/functions/gemini-chat)) so the `GEMINI_API_KEY` never ships to the browser.
+- **AI**: The Gemini chat used by the AI assistant runs behind a Supabase Edge Function ([`supabase/functions/gemini-chat`](supabase/functions/gemini-chat)) so the `GEMINI_API_KEY` never ships to the browser. A second function, [`supabase/functions/generate-architecture`](supabase/functions/generate-architecture), powers "Suggest with AI" on the Architecture step — both share the tool schema in [`supabase/functions/_shared/architectureTool.ts`](supabase/functions/_shared/architectureTool.ts).
+- **Architecture diagrams**: stored as plain `{ nodes, edges }` JSON on the project (`architecture` field — no schema migration needed, it lives in the existing `data` jsonb column), rendered with `@xyflow/react`. AI-proposed diagrams come back as ids/types only and are auto-layered into x/y positions client-side by `lib/architecture.ts`. Both the editor canvas and the read-only project-view diagram are lazy-loaded (`React.lazy`) so the ~190KB React Flow chunk only loads for users who touch that screen.
 
 ## Tech Stack
 
@@ -26,6 +28,7 @@ Auth and data persistence are backed by [Supabase](https://supabase.com): every 
 - TypeScript
 - Vite
 - `@supabase/supabase-js`
+- `@xyflow/react` (React Flow) for the architecture diagram
 - `lucide-react`
 - Tailwind via CDN in `index.html`
 
@@ -71,6 +74,7 @@ supabase login
 supabase link --project-ref your-project-ref
 supabase secrets set GEMINI_API_KEY=your-gemini-key
 supabase functions deploy gemini-chat
+supabase functions deploy generate-architecture
 ```
 
 The function has JWT verification enabled by default, so only requests from a signed-in user reach it.
@@ -105,7 +109,7 @@ npm run preview
 - [ ] Add automated tests (none exist yet — recommend Vitest + React Testing Library for components, and a couple of integration tests against a local Supabase instance for `services/projectsService.ts`).
 - [ ] Wire a CI pipeline (typecheck + build) before deploying, e.g. GitHub Actions running `npm run build`.
 - [ ] Set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` as environment variables in your hosting provider (Vercel/Netlify/etc.) — don't rely on `.env.local` in production builds.
-- [ ] Consider code-splitting via dynamic `import()` if bundle size becomes a concern.
+- [x] Code-split the React Flow architecture UI via `React.lazy` so it's not in the main bundle.
 - [ ] Re-enable Google OAuth in `AuthScreen.tsx` if you want it live (the provider call already exists in `AuthContext`).
 
 ## Project Structure
@@ -115,6 +119,11 @@ npm run preview
 ├── App.tsx                          # Top-level app state, auth gate, and view switching
 ├── components/
 │   ├── AIWizard.tsx                 # Gemini-assisted project generation (via edge function)
+│   ├── Architecture/
+│   │   ├── ArchitectureCanvas.tsx   # Editable React Flow diagram (Editor step)
+│   │   ├── ArchitectureDiagram.tsx  # Read-only React Flow diagram (Project View)
+│   │   ├── DiagramNode.tsx          # Shared custom node renderer
+│   │   └── archTypes.ts             # Node type metadata (icons, colors, labels)
 │   ├── Auth/AuthScreen.tsx          # Sign-in / sign-up screen
 │   ├── Dashboard.tsx                # Project library and entry points
 │   ├── ErrorBoundary.tsx            # Top-level render error fallback
@@ -122,11 +131,16 @@ npm run preview
 │   ├── ProjectView.tsx              # Presentation-style project details view, with delete
 │   └── Sidebar.tsx                  # Navigation, account, and theme toggle
 ├── contexts/AuthContext.tsx         # Supabase session/auth state
-├── lib/supabaseClient.ts            # Supabase client singleton
+├── lib/
+│   ├── supabaseClient.ts            # Supabase client singleton
+│   └── architecture.ts              # Architecture <-> React Flow conversion + auto-layout
 ├── services/projectsService.ts      # Project CRUD against Supabase
 ├── supabase/
 │   ├── schema.sql                   # projects table + RLS policies
-│   └── functions/gemini-chat/       # Edge function proxying Gemini chat
+│   └── functions/
+│       ├── _shared/architectureTool.ts   # Shared Gemini tool schema for architecture
+│       ├── gemini-chat/                  # Edge function proxying Gemini chat
+│       └── generate-architecture/        # Edge function: AI-suggested architecture
 ├── mockData.ts                      # Seed project used for "New Project"
 ├── types.ts                         # Shared project data model
 ├── updated_prd.md                   # Product direction for SpecArc v2

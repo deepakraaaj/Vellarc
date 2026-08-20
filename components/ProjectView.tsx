@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Project } from '../types';
-import { Edit3, Download, ArrowLeft, Check, AlertCircle, User, Palette, Zap, Server, Book, ExternalLink, TestTube, Target, Swords, ChevronRight, Fingerprint, Terminal, Clock, ArrowUpRight, Flame, Trash2 } from 'lucide-react';
+import { Edit3, Download, ArrowLeft, Check, AlertCircle, User, Palette, Zap, Server, Book, ExternalLink, TestTube, Target, Swords, ChevronRight, Fingerprint, Terminal, Clock, ArrowUpRight, Flame, Trash2, Boxes } from 'lucide-react';
+
+// ReactFlow is a large dependency only needed when a project actually has an
+// architecture diagram, so it's code-split out of the main view bundle.
+const ArchitectureDiagram = lazy(() =>
+  import('./Architecture/ArchitectureDiagram').then((m) => ({ default: m.ArchitectureDiagram }))
+);
 
 interface ProjectViewProps {
   project: Project;
@@ -294,6 +300,22 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project, onEdit, onBac
                     </div>
                 </div>
             </div>
+
+            {project.architecture && project.architecture.nodes.length > 0 && (
+              <div className="md:col-span-12 glass-panel rounded-[2rem] p-8 relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-6 relative z-10">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Boxes className="text-cyan-500" /> System Architecture
+                      </h3>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          {project.architecture.nodes.length} components · {project.architecture.edges.length} connections
+                      </span>
+                  </div>
+                  <Suspense fallback={<div className="h-[420px] rounded-2xl border border-slate-200/70 dark:border-slate-800 flex items-center justify-center text-sm font-bold text-gray-400">Loading diagram...</div>}>
+                    <ArchitectureDiagram value={project.architecture} />
+                  </Suspense>
+              </div>
+            )}
 
             {/* User Stories Section */}
             <div className="md:col-span-12">

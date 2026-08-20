@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, X, Terminal, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import { layoutArchitecture } from '../lib/architecture';
 import { Project } from '../types';
 
 interface AIWizardProps {
@@ -70,6 +71,10 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
         projectData.features = projectData.features?.map((f: any) => ({ ...f, id: f.id || Math.random().toString() })) || [];
         projectData.userStories = projectData.userStories?.map((u: any) => ({ ...u, id: u.id || Math.random().toString() })) || [];
         projectData.competitors = projectData.competitors?.map((c: any) => ({ ...c, id: c.id || Math.random().toString() })) || [];
+        const rawArchitecture = (projectData as any).architecture;
+        projectData.architecture = rawArchitecture
+          ? layoutArchitecture(rawArchitecture.nodes ?? [], rawArchitecture.edges ?? [])
+          : { nodes: [], edges: [] };
 
         onProjectGenerated(projectData);
         return;
