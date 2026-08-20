@@ -746,7 +746,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                     <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 mt-2">Map out the major components and how they connect.</p>
                 </div>
              </div>
-             <Suspense fallback={<div className="h-[560px] rounded-2xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 flex items-center justify-center text-sm font-bold text-gray-400">Loading canvas...</div>}>
+             <Suspense fallback={<div className="h-[calc(100vh-230px)] min-h-[640px] rounded-2xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 flex items-center justify-center text-sm font-bold text-gray-400">Loading canvas...</div>}>
                <ArchitectureCanvas
                   value={project.architecture ?? { nodes: [], edges: [] }}
                   onChange={(architecture) => setProject({ ...project, architecture })}
@@ -1098,7 +1098,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
             
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4 md:p-10 scroll-smooth">
-                <div className="max-w-4xl mx-auto min-h-[500px] flex flex-col pb-32">
+                <div className={`mx-auto min-h-[500px] flex flex-col pb-32 ${steps[activeStep].id === 'architecture' ? 'max-w-[1600px]' : 'max-w-4xl'}`}>
                     {/* Steps Progress (Mobile only) */}
                     <div className="md:hidden mb-6 overflow-x-auto flex gap-1 pb-2 no-scrollbar">
                         {steps.map((step, i) => (

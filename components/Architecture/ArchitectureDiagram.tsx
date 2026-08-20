@@ -12,7 +12,7 @@ interface ArchitectureDiagramProps {
   height?: number;
 }
 
-export const ArchitectureDiagram: React.FC<ArchitectureDiagramProps> = ({ value, height = 420 }) => {
+export const ArchitectureDiagram: React.FC<ArchitectureDiagramProps> = ({ value, height = 560 }) => {
   const { nodes, edges } = useMemo(() => {
     const flow = architectureToFlow(value);
     return {

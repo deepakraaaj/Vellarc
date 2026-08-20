@@ -164,7 +164,7 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 h-[560px]">
+    <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-230px)] min-h-[640px]">
       {/* Canvas */}
       <div ref={wrapperRef} className="relative flex-1 min-w-0 rounded-2xl overflow-hidden border border-white/60 dark:border-white/10 bg-slate-50/60 dark:bg-slate-950/40">
         <ReactFlow
