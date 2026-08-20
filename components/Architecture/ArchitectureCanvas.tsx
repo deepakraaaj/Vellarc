@@ -16,7 +16,7 @@ import {
   type OnEdgesChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Plus, Sparkles, Loader2, Trash2, Boxes } from 'lucide-react';
+import { Plus, Sparkles, Loader2, Trash2, Boxes, X } from 'lucide-react';
 import { Architecture, ArchitectureNodeType } from '../../types';
 import { architectureToFlow, flowToArchitecture, makeId } from '../../lib/architecture';
 import { ARCH_ACCENT_CLASSES, ARCH_NODE_TYPES, getArchNodeConfig } from './archTypes';
@@ -164,9 +164,9 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-230px)] min-h-[640px]">
+    <div className="h-[calc(100vh-230px)] min-h-[640px]">
       {/* Canvas */}
-      <div ref={wrapperRef} className="relative flex-1 min-w-0 rounded-2xl overflow-hidden border border-white/60 dark:border-white/10 bg-slate-50/60 dark:bg-slate-950/40">
+      <div ref={wrapperRef} className="relative w-full h-full rounded-2xl overflow-hidden border border-white/60 dark:border-white/10 bg-slate-50/60 dark:bg-slate-950/40">
         <ReactFlow
           nodes={decoratedNodes}
           edges={edges}
@@ -248,62 +248,66 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
             </div>
           </div>
         )}
-      </div>
 
-      {/* Inspector */}
-      <div className="w-full md:w-72 shrink-0 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm p-5 overflow-y-auto">
-        {selectedNode ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+        {/* Inspector popup: appears over the canvas only while a node is selected,
+            so the diagram keeps the full width the rest of the time. */}
+        {selectedNode && (
+          <div className="absolute top-3 right-3 z-10 w-80 max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl border border-white/60 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-xl p-5">
+            <div className="flex items-center justify-between mb-4">
               <p className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">Component</p>
-              <button
-                onClick={() => deleteNode(selectedNode.id)}
-                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
-                title="Delete component"
-              >
-                <Trash2 size={14} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => deleteNode(selectedNode.id)}
+                  className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                  title="Delete component"
+                >
+                  <Trash2 size={14} />
+                </button>
+                <button
+                  onClick={() => setSelectedId(null)}
+                  className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white transition-colors"
+                  title="Close"
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">Type</label>
-              <select
-                value={selectedNode.data.nodeType}
-                onChange={(e) => updateSelectedNode({ nodeType: e.target.value as ArchitectureNodeType })}
-                className="w-full p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white"
-              >
-                {ARCH_NODE_TYPES.map((cfg) => (
-                  <option key={cfg.type} value={cfg.type}>{cfg.label}</option>
-                ))}
-              </select>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">Type</label>
+                <select
+                  value={selectedNode.data.nodeType}
+                  onChange={(e) => updateSelectedNode({ nodeType: e.target.value as ArchitectureNodeType })}
+                  className="w-full p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  {ARCH_NODE_TYPES.map((cfg) => (
+                    <option key={cfg.type} value={cfg.type}>{cfg.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">Label</label>
+                <input
+                  type="text"
+                  value={selectedNode.data.label}
+                  onChange={(e) => updateSelectedNode({ label: e.target.value })}
+                  className="w-full p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">Description</label>
+                <textarea
+                  value={selectedNode.data.description ?? ''}
+                  onChange={(e) => updateSelectedNode({ description: e.target.value })}
+                  rows={4}
+                  placeholder="What does this component do?"
+                  className="w-full p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white resize-none"
+                />
+              </div>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed">
+                Drag from a component's edge to another to connect them. Click the canvas to close.
+              </p>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">Label</label>
-              <input
-                type="text"
-                value={selectedNode.data.label}
-                onChange={(e) => updateSelectedNode({ label: e.target.value })}
-                className="w-full p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">Description</label>
-              <textarea
-                value={selectedNode.data.description ?? ''}
-                onChange={(e) => updateSelectedNode({ description: e.target.value })}
-                rows={4}
-                placeholder="What does this component do?"
-                className="w-full p-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white resize-none"
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed">
-              Drag from a component's edge to another to connect them. Click the canvas to deselect.
-            </p>
-          </div>
-        ) : (
-          <div className="text-center py-10">
-            <Boxes size={24} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-            <p className="text-sm font-bold text-gray-500 dark:text-gray-400">Select a component</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Click any node on the canvas to edit its details, or add a new one.</p>
           </div>
         )}
       </div>
