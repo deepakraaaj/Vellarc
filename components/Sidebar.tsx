@@ -7,9 +7,11 @@ interface SidebarProps {
   activeView: string;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  userEmail?: string | null;
+  onSignOut?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onDashboardClick, onNewProjectClick, activeView, isDarkMode, onToggleTheme }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onDashboardClick, onNewProjectClick, activeView, isDarkMode, onToggleTheme, userEmail, onSignOut }) => {
   return (
     <div className="h-full flex flex-col p-4 md:p-6">
       <div className="flex-1 rounded-3xl glass-panel flex flex-col overflow-hidden relative transition-colors duration-300">
@@ -81,25 +83,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onDashboardClick, onNewProject
         </nav>
 
         <div className="p-4 z-10">
-          <div className="p-3 bg-white/70 dark:bg-slate-900/75 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between group cursor-pointer transition-all duration-300">
-            <div className="flex items-center gap-3">
-                <div className="relative">
+          <button
+            onClick={onSignOut}
+            title="Sign out"
+            className="w-full p-3 bg-white/70 dark:bg-slate-900/75 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between group cursor-pointer hover:bg-white dark:hover:bg-slate-800/80 hover:shadow-md transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+                <div className="relative shrink-0">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 p-[2px]">
                         <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
-                            <img src="https://ui-avatars.com/api/?name=Designer&background=random" alt="User" className="w-full h-full object-cover" />
+                            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userEmail ?? 'User')}&background=random`} alt="User" className="w-full h-full object-cover" />
                         </div>
                     </div>
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full animate-pulse"></div>
                 </div>
-                <div className="flex flex-col">
-                    <span className="font-bold text-gray-900 dark:text-white text-sm">Workspace Owner</span>
+                <div className="flex flex-col min-w-0 text-left">
+                    <span className="font-bold text-gray-900 dark:text-white text-sm truncate">{userEmail ?? 'Account'}</span>
                     <span className="text-[10px] font-bold text-indigo-500 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit">
-                        <Sparkles size={8} /> ACTIVE
+                        <Sparkles size={8} /> SIGNED IN
                     </span>
                 </div>
             </div>
-            <LogOut size={16} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
-          </div>
+            <LogOut size={16} className="text-gray-400 group-hover:text-rose-500 transition-colors shrink-0" />
+          </button>
         </div>
       </div>
     </div>

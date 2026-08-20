@@ -1,29 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ProjectView } from './components/ProjectView';
 import { ProjectEditor } from './components/ProjectEditor';
 import { Sidebar } from './components/Sidebar';
 import { AIWizard } from './components/AIWizard';
+import { AuthScreen } from './components/Auth/AuthScreen';
 import { initialProject } from './mockData';
 import { Project, ViewMode } from './types';
-import { Menu } from 'lucide-react';
+import { Menu, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from './contexts/AuthContext';
+import { fetchProjects, upsertProject, deleteProject } from './services/projectsService';
+
+function newBlankProject(): Project {
+  return {
+    ...initialProject,
+    id: Date.now().toString(),
+    title: 'Untitled Project',
+    status: 'Draft',
+    lastUpdated: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+  };
+}
 
 function App() {
-  const [projects, setProjects] = useState<Project[]>([initialProject]);
+  const { user, isLoading: isAuthLoading, signOut } = useAuth();
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isProjectsLoading, setIsProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
+
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAIOverlayOpen, setIsAIOverlayOpen] = useState(false);
-  
+  const [isSaving, setIsSaving] = useState(false);
+
   // Track which step to open in the editor
   const [editorInitialStep, setEditorInitialStep] = useState<string>('basic');
 
   useEffect(() => {
     if (isDarkMode) {
-        document.body.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
-        document.body.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
   }, [isDarkMode]);
 
@@ -40,6 +59,29 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isAIOverlayOpen]);
 
+  const loadProjects = useCallback(async () => {
+    if (!user) return;
+    setIsProjectsLoading(true);
+    setProjectsError(null);
+    try {
+      const fetched = await fetchProjects();
+      setProjects(fetched);
+    } catch (err) {
+      console.error('Failed to load projects:', err);
+      setProjectsError('Could not load your projects. Check your connection and try again.');
+    } finally {
+      setIsProjectsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadProjects();
+    } else {
+      setProjects([]);
+    }
+  }, [user, loadProjects]);
+
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   const transitionTo = (mode: ViewMode, project?: Project) => {
@@ -49,25 +91,47 @@ function App() {
   };
 
   const handleEditRequest = (project: Project, step: string = 'basic') => {
-      setEditorInitialStep(step);
-      transitionTo('edit', project);
+    setEditorInitialStep(step);
+    transitionTo('edit', project);
   };
 
-  const handleSaveProject = (updatedProject: Project) => {
-    const exists = projects.find(p => p.id === updatedProject.id);
-    if (exists) {
-        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
-    } else {
-        setProjects([...projects, updatedProject]);
+  const handleSaveProject = async (updatedProject: Project) => {
+    if (!user) return;
+    setIsSaving(true);
+    setProjectsError(null);
+    try {
+      const saved = await upsertProject(updatedProject, user.id);
+      setProjects(prev => {
+        const exists = prev.find(p => p.id === updatedProject.id || p.id === saved.id);
+        return exists ? prev.map(p => (p.id === updatedProject.id ? saved : p)) : [saved, ...prev];
+      });
+      transitionTo('view', saved);
+    } catch (err) {
+      console.error('Failed to save project:', err);
+      setProjectsError('Could not save this project. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
-    transitionTo('view', updatedProject);
+  };
+
+  const handleDeleteProject = async (project: Project) => {
+    try {
+      await deleteProject(project.id);
+      setProjects(prev => prev.filter(p => p.id !== project.id));
+      if (activeProject?.id === project.id) {
+        transitionTo('dashboard');
+      }
+    } catch (err) {
+      console.error('Failed to delete project:', err);
+      setProjectsError('Could not delete this project. Please try again.');
+    }
   };
 
   const handleAIProjectGenerated = (partialProject: Omit<Project, 'id' | 'lastUpdated'>) => {
     const newProject: Project = {
-        ...partialProject,
-        id: Date.now().toString(),
-        lastUpdated: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      ...partialProject,
+      id: Date.now().toString(),
+      lastUpdated: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     };
     setIsAIOverlayOpen(false);
     handleSaveProject(newProject);
@@ -78,32 +142,44 @@ function App() {
     setIsAIOverlayOpen(true);
   };
 
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
   return (
     <div className={`min-h-screen font-sans selection:bg-indigo-500 selection:text-white ${isDarkMode ? 'dark' : ''}`}>
-      
+
       {/* Mobile Header - Visible only on mobile */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-40 border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between shadow-sm transition-colors duration-300">
-          <div className="flex items-center gap-2">
-            <img
-              src="/specarc-mark.svg"
-              alt="SpecArc logo"
-              className="w-10 h-10 rounded-xl shadow-[0_12px_28px_-12px_rgba(99,102,241,0.8)]"
-            />
-            <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">SpecArc</span>
-          </div>
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg active:scale-95 transition-all"
-          >
-            <Menu size={24} />
-          </button>
+        <div className="flex items-center gap-2">
+          <img
+            src="/specarc-mark.svg"
+            alt="SpecArc logo"
+            className="w-10 h-10 rounded-xl shadow-[0_12px_28px_-12px_rgba(99,102,241,0.8)]"
+          />
+          <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">SpecArc</span>
+        </div>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg active:scale-95 transition-all"
+        >
+          <Menu size={24} />
+        </button>
       </div>
 
       {/* Sidebar Overlay for Mobile */}
       {isMobileMenuOpen && (
-        <div 
-            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
+        <div
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
@@ -111,61 +187,62 @@ function App() {
       <aside className={`fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-500 ease-out md:translate-x-0 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <Sidebar 
+        <Sidebar
           activeView={viewMode}
           onDashboardClick={() => transitionTo('dashboard')}
-          onNewProjectClick={() => {
-               const newProject: Project = { 
-                 ...initialProject, 
-                 id: Date.now().toString(), 
-                 title: 'Untitled Project', 
-                 status: 'Draft',
-                 lastUpdated: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-               };
-               handleEditRequest(newProject, 'basic');
-          }}
+          onNewProjectClick={() => handleEditRequest(newBlankProject(), 'basic')}
           isDarkMode={isDarkMode}
           onToggleTheme={toggleTheme}
+          userEmail={user.email ?? null}
+          onSignOut={signOut}
         />
       </aside>
-      
+
       {/* Main Content - Offset by sidebar width on desktop */}
       <main className="md:ml-80 min-h-screen transition-all duration-300 pt-20 md:pt-4 pr-4 md:pr-8 pb-8">
         <div className="max-w-[1800px] mx-auto">
-            {viewMode === 'dashboard' && (
-                <Dashboard 
-                    projects={projects} 
-                    onNewProject={() => {
-                        const newProject: Project = { 
-                          ...initialProject, 
-                          id: Date.now().toString(), 
-                          title: 'Untitled Project', 
-                          status: 'Draft',
-                          lastUpdated: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                        };
-                        handleEditRequest(newProject, 'basic');
-                    }}
-                    onSelectProject={(p) => transitionTo('view', p)}
-                />
-            )}
+          {projectsError && (
+            <div className="mb-6 flex items-center gap-2 text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-4">
+              <AlertCircle size={18} className="shrink-0" />
+              <span>{projectsError}</span>
+              <button onClick={loadProjects} className="ml-auto font-bold underline shrink-0">Retry</button>
+            </div>
+          )}
 
-            {viewMode === 'view' && activeProject && (
-                <ProjectView 
-                    project={activeProject} 
-                    onEdit={(step) => handleEditRequest(activeProject, step)}
-                    onBack={() => transitionTo('dashboard')}
+          {isProjectsLoading ? (
+            <div className="flex items-center justify-center py-32">
+              <Loader2 size={28} className="animate-spin text-indigo-500" />
+            </div>
+          ) : (
+            <>
+              {viewMode === 'dashboard' && (
+                <Dashboard
+                  projects={projects}
+                  onNewProject={() => handleEditRequest(newBlankProject(), 'basic')}
+                  onSelectProject={(p) => transitionTo('view', p)}
                 />
-            )}
+              )}
 
-            {viewMode === 'edit' && activeProject && (
-                <ProjectEditor 
-                    project={activeProject} 
-                    initialStep={editorInitialStep}
-                    onSave={handleSaveProject}
-                    onCancel={() => transitionTo(activeProject.id === initialProject.id ? 'view' : 'dashboard', activeProject)}
+              {viewMode === 'view' && activeProject && (
+                <ProjectView
+                  project={activeProject}
+                  onEdit={(step) => handleEditRequest(activeProject, step)}
+                  onBack={() => transitionTo('dashboard')}
+                  onDelete={() => handleDeleteProject(activeProject)}
                 />
-            )}
+              )}
 
+              {viewMode === 'edit' && activeProject && (
+                <ProjectEditor
+                  project={activeProject}
+                  initialStep={editorInitialStep}
+                  onSave={handleSaveProject}
+                  onCancel={() => transitionTo(activeProject.id === initialProject.id ? 'view' : 'dashboard', activeProject)}
+                  isSaving={isSaving}
+                />
+              )}
+            </>
+          )}
         </div>
       </main>
 

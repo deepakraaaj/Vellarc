@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { Project } from '../types';
-import { Edit3, Download, ArrowLeft, Check, AlertCircle, User, Palette, Zap, Server, Book, ExternalLink, TestTube, Target, Swords, ChevronRight, Fingerprint, Terminal, Clock, ArrowUpRight, Flame } from 'lucide-react';
+import { Edit3, Download, ArrowLeft, Check, AlertCircle, User, Palette, Zap, Server, Book, ExternalLink, TestTube, Target, Swords, ChevronRight, Fingerprint, Terminal, Clock, ArrowUpRight, Flame, Trash2 } from 'lucide-react';
 
 interface ProjectViewProps {
   project: Project;
   onEdit: (step?: string) => void;
   onBack: () => void;
+  onDelete?: () => void;
 }
 
-export const ProjectView: React.FC<ProjectViewProps> = ({ project, onEdit, onBack }) => {
+export const ProjectView: React.FC<ProjectViewProps> = ({ project, onEdit, onBack, onDelete }) => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportComplete, setExportComplete] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleExport = () => {
     setShowExportModal(true);
@@ -48,6 +50,12 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project, onEdit, onBac
                     <Download size={18} />
                     <span>Export</span>
                 </button>
+                {onDelete && (
+                    <button onClick={() => setShowDeleteConfirm(true)} className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white/70 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700 text-rose-600 dark:text-rose-400 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all font-bold text-sm shadow-sm">
+                        <Trash2 size={18} />
+                        <span>Delete</span>
+                    </button>
+                )}
                 <button onClick={() => onEdit('basic')} className="flex items-center gap-2 px-5 py-2.5 bg-gray-950 dark:bg-white text-white dark:text-slate-900 rounded-xl hover:bg-black dark:hover:bg-gray-100 transition-all font-bold text-sm shadow-[0_20px_45px_-24px_rgba(15,23,42,0.7)] hover:-translate-y-0.5">
                     <Edit3 size={18} />
                     <span>Edit Mode</span>
@@ -55,6 +63,26 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project, onEdit, onBac
             </div>
           </div>
       </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="glass-panel rounded-3xl p-8 max-w-sm w-full text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center">
+              <Trash2 size={26} className="text-rose-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete "{project.title}"?</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This can't be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 rounded-2xl font-bold text-sm bg-white/50 dark:bg-slate-800/50 border border-white/60 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-slate-700">
+                Cancel
+              </button>
+              <button onClick={() => { setShowDeleteConfirm(false); onDelete?.(); }} className="flex-1 py-3 rounded-2xl font-bold text-sm bg-rose-600 hover:bg-rose-700 text-white">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-[1600px] mx-auto space-y-8 px-4">
         <div className="relative rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-[0_28px_70px_-38px_rgba(15,23,42,0.28)] border border-slate-200/70 dark:border-slate-800 glass-panel">

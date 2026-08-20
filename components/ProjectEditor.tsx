@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Project } from '../types';
-import { Check, ChevronRight, Save, AlertCircle, User, Palette, Flag, Zap, PenTool, TestTube, Server, Book, Plus, X, Trash2, ExternalLink, Target, Swords, Database, Globe, Cpu } from 'lucide-react';
+import { Check, ChevronRight, Save, AlertCircle, User, Palette, Flag, Zap, PenTool, TestTube, Server, Book, Plus, X, Trash2, ExternalLink, Target, Swords, Database, Globe, Cpu, Loader2 } from 'lucide-react';
 
 interface ProjectEditorProps {
   project: Project;
   initialStep?: string;
   onSave: (project: Project) => void;
   onCancel: () => void;
+  isSaving?: boolean;
 }
 
 const steps = [
@@ -96,7 +97,7 @@ const ColoredInputBlock = ({
     );
 };
 
-export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialProject, initialStep = 'basic', onSave, onCancel }) => {
+export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialProject, initialStep = 'basic', onSave, onCancel, isSaving = false }) => {
   const [project, setProject] = useState<Project>(initialProject);
   const [activeStep, setActiveStep] = useState(0);
 
@@ -1006,13 +1007,13 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
             <p className="text-sm md:text-base text-indigo-700 dark:text-indigo-300 font-bold truncate max-w-[150px] md:max-w-xs">{project.title || 'Untitled'}</p>
         </div>
         <div className="flex gap-2 md:gap-4">
-            <button onClick={onCancel} className="px-3 md:px-6 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm md:text-base border border-transparent hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm">
+            <button onClick={onCancel} disabled={isSaving} className="px-3 md:px-6 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm md:text-base border border-transparent hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-sm disabled:opacity-50">
                 Discard
             </button>
-            <button onClick={() => onSave(project)} className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-bold text-sm md:text-base shadow-lg shadow-indigo-100 dark:shadow-none hover:-translate-y-0.5 transform duration-200">
-                <Save size={18} />
-                <span className="hidden md:inline">Save & View</span>
-                <span className="md:hidden">Save</span>
+            <button onClick={() => onSave(project)} disabled={isSaving} className="flex items-center gap-2 px-4 md:px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-bold text-sm md:text-base shadow-lg shadow-indigo-100 dark:shadow-none hover:-translate-y-0.5 transform duration-200 disabled:opacity-60 disabled:hover:translate-y-0">
+                {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                <span className="hidden md:inline">{isSaving ? 'Saving...' : 'Save & View'}</span>
+                <span className="md:hidden">{isSaving ? 'Saving' : 'Save'}</span>
             </button>
         </div>
       </div>
@@ -1020,7 +1021,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Navigation Sidebar */}
-        <div className="w-80 bg-white/62 dark:bg-slate-900/62 backdrop-blur-sm border-r border-slate-200/70 dark:border-slate-800 overflow-y-auto hidden md:block custom-scrollbar">
+        <div className="w-80 shrink-0 bg-white/62 dark:bg-slate-900/62 backdrop-blur-sm border-r border-slate-200/70 dark:border-slate-800 overflow-y-auto hidden md:block custom-scrollbar">
             <div className="p-6">
                 <p className="text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-6 pl-2">Configuration</p>
                 <div className="space-y-2 pb-8">
@@ -1029,8 +1030,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({ project: initialPr
                             key={step.id}
                             onClick={() => setActiveStep(index)}
                             className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-bold text-left transition-all duration-300 ${
-                                activeStep === index 
-                                ? 'bg-white dark:bg-slate-800 shadow-sm text-indigo-700 dark:text-indigo-300 border border-slate-200 dark:border-slate-700 translate-x-1' 
+                                activeStep === index
+                                ? 'bg-white dark:bg-slate-800 shadow-sm text-indigo-700 dark:text-indigo-300 border border-slate-200 dark:border-slate-700 translate-x-1'
                                 : 'text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
                             }`}
                         >

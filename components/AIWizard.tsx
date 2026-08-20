@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, X, Terminal } from 'lucide-react';
-import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
+import { Send, User, X, Terminal, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 import { Project } from '../types';
 
 interface AIWizardProps {
@@ -13,145 +13,10 @@ interface Message {
   content: string;
 }
 
-const createProjectTool: FunctionDeclaration = {
-  name: 'create_project',
-  description: 'Create a full software project documentation object.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      title: { type: Type.STRING },
-      tagline: { type: Type.STRING },
-      status: { type: Type.STRING, enum: ['Draft', 'In Review', 'Approved'] },
-      problemStatement: {
-        type: Type.OBJECT,
-        properties: {
-          overview: { type: Type.STRING },
-          painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
-          impact: { type: Type.STRING }
-        },
-        required: ['overview', 'painPoints', 'impact']
-      },
-      personas: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            id: { type: Type.STRING },
-            name: { type: Type.STRING },
-            role: { type: Type.STRING },
-            goals: { type: Type.STRING },
-            frustrations: { type: Type.STRING }
-          },
-          required: ['name', 'role', 'goals', 'frustrations']
-        }
-      },
-      competitors: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            id: { type: Type.STRING },
-            name: { type: Type.STRING },
-            strengths: { type: Type.STRING },
-            weaknesses: { type: Type.STRING }
-          },
-          required: ['name', 'strengths', 'weaknesses']
-        }
-      },
-      successMetrics: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            id: { type: Type.STRING },
-            metric: { type: Type.STRING },
-            target: { type: Type.STRING }
-          },
-          required: ['metric', 'target']
-        }
-      },
-      colorPalette: {
-        type: Type.OBJECT,
-        properties: {
-            primary: { type: Type.STRING },
-            secondary: { type: Type.STRING },
-            accent: { type: Type.STRING },
-            background: { type: Type.STRING },
-            text: { type: Type.STRING }
-        },
-        required: ['primary', 'secondary', 'accent', 'background', 'text']
-      },
-      userStories: {
-        type: Type.ARRAY,
-        items: {
-            type: Type.OBJECT,
-            properties: {
-                id: { type: Type.STRING },
-                role: { type: Type.STRING },
-                goal: { type: Type.STRING },
-                benefit: { type: Type.STRING },
-                priority: { type: Type.STRING, enum: ['Must Have', 'Should Have', 'Could Have'] }
-            },
-            required: ['role', 'goal', 'benefit', 'priority']
-        }
-      },
-      features: {
-        type: Type.ARRAY,
-        items: {
-            type: Type.OBJECT,
-            properties: {
-                id: { type: Type.STRING },
-                name: { type: Type.STRING },
-                status: { type: Type.STRING, enum: ['Planned', 'In Progress', 'Completed'] },
-                description: { type: Type.STRING },
-                benefit: { type: Type.STRING }
-            },
-            required: ['name', 'status', 'description', 'benefit']
-        }
-      },
-      design: {
-        type: Type.OBJECT,
-        properties: {
-            philosophy: { type: Type.STRING },
-            principles: { type: Type.ARRAY, items: { type: Type.STRING } },
-            wireframesUrl: { type: Type.STRING },
-            mockupsUrl: { type: Type.STRING }
-        },
-        required: ['philosophy', 'principles']
-      },
-      testing: {
-        type: Type.OBJECT,
-        properties: {
-            strategy: { type: Type.STRING },
-            cases: { 
-                type: Type.ARRAY, 
-                items: { 
-                    type: Type.OBJECT,
-                    properties: {
-                        id: { type: Type.STRING },
-                        name: { type: Type.STRING },
-                        description: { type: Type.STRING },
-                        expected: { type: Type.STRING }
-                    },
-                    required: ['name', 'description', 'expected']
-                } 
-            }
-        },
-        required: ['strategy', 'cases']
-      },
-      deployment: {
-        type: Type.OBJECT,
-        properties: {
-            platform: { type: Type.STRING },
-            strategy: { type: Type.STRING },
-            environment: { type: Type.STRING }
-        },
-        required: ['platform', 'strategy', 'environment']
-      }
-    },
-    required: ['title', 'problemStatement', 'features', 'deployment', 'personas', 'successMetrics', 'colorPalette', 'design', 'testing']
-  }
-};
+interface ChatTurn {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+}
 
 export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated }) => {
   const [messages, setMessages] = useState<Message[]>([
@@ -159,8 +24,8 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [chatSession, setChatSession] = useState<any>(null);
-  const [initError, setInitError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const historyRef = useRef<ChatTurn[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -171,78 +36,53 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    try {
-      const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-
-      if (!apiKey) {
-        setInitError('SpecArc AI is not configured yet. Add GEMINI_API_KEY in .env.local to enable chat.');
-        return;
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      const chat = ai.chats.create({
-          model: 'gemini-2.5-flash',
-          config: {
-              systemInstruction: `You are SpecArc AI, the assistant inside SpecArc, an AI product architecture workspace.
-
-              Brand voice:
-              - Clear, premium, practical, and encouraging.
-              - Slightly futuristic, but never cheesy or childish.
-              - You NEVER ask more than ONE question at a time.
-
-              Goal:
-              - Turn a vague idea into a structured project brief.
-              - Ask about the product concept, target users, core workflows, and key features.
-              - Infer the rest carefully where appropriate, including stack, metrics, testing, and deployment.
-              - Finally, call 'create_project'.
-
-              Do not output raw JSON text. Use the tool.`,
-              tools: [{ functionDeclarations: [createProjectTool] }]
-          }
-      });
-
-      setInitError(null);
-      setChatSession(chat);
-    } catch (error) {
-      console.error('AI initialization error:', error);
-      setInitError('SpecArc AI could not start right now. Check your API key and try again.');
-    }
-  }, []);
-
   const handleSend = async () => {
-    if (!input.trim() || !chatSession || initError) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
+    const sentInput = input;
     setInput('');
     setIsLoading(true);
+    setError(null);
 
     try {
-        const result = await chatSession.sendMessage({ message: input });
-        
-        if (result.functionCalls && result.functionCalls.length > 0) {
-            const call = result.functionCalls[0];
-            if (call.name === 'create_project') {
-                const projectData = call.args as unknown as Omit<Project, 'id' | 'lastUpdated'>;
-                // Add IDs if missing
-                projectData.personas = projectData.personas?.map((p: any) => ({...p, id: p.id || Math.random().toString()})) || [];
-                projectData.features = projectData.features?.map((f: any) => ({...f, id: f.id || Math.random().toString()})) || [];
-                projectData.userStories = projectData.userStories?.map((u: any) => ({...u, id: u.id || Math.random().toString()})) || [];
-                projectData.competitors = projectData.competitors?.map((c: any) => ({...c, id: c.id || Math.random().toString()})) || [];
-                
-                onProjectGenerated(projectData);
-                return;
-            }
-        }
+      // The Gemini key and the create_project tool schema live server-side in
+      // the gemini-chat edge function, so the browser never sees the API key.
+      const { data, error: invokeError } = await supabase.functions.invoke('gemini-chat', {
+        body: { history: historyRef.current, message: sentInput },
+      });
 
-        const modelMessage: Message = { role: 'model', content: result.text || "Computing response..." };
-        setMessages(prev => [...prev, modelMessage]);
-    } catch (error) {
-        console.error("AI Error:", error);
-        setMessages(prev => [...prev, { role: 'model', content: "I hit a connection issue just now. Please try again." }]);
+      if (invokeError) throw invokeError;
+      if (data?.error) throw new Error(data.error);
+
+      // Keep our own turn log in sync so the next call carries full context.
+      historyRef.current = [
+        ...historyRef.current,
+        { role: 'user', parts: [{ text: sentInput }] },
+        { role: 'model', parts: [{ text: data?.text ?? '' }] },
+      ];
+
+      if (data?.functionCall?.name === 'create_project') {
+        const projectData = data.functionCall.args as Omit<Project, 'id' | 'lastUpdated'>;
+        // Add IDs if missing
+        projectData.personas = projectData.personas?.map((p: any) => ({ ...p, id: p.id || Math.random().toString() })) || [];
+        projectData.features = projectData.features?.map((f: any) => ({ ...f, id: f.id || Math.random().toString() })) || [];
+        projectData.userStories = projectData.userStories?.map((u: any) => ({ ...u, id: u.id || Math.random().toString() })) || [];
+        projectData.competitors = projectData.competitors?.map((c: any) => ({ ...c, id: c.id || Math.random().toString() })) || [];
+
+        onProjectGenerated(projectData);
+        return;
+      }
+
+      const modelMessage: Message = { role: 'model', content: data?.text || 'Computing response...' };
+      setMessages(prev => [...prev, modelMessage]);
+    } catch (err) {
+      console.error('AI Error:', err);
+      setError('I hit a connection issue just now. Please try again.');
+      setMessages(prev => [...prev, { role: 'model', content: 'I hit a connection issue just now. Please try again.' }]);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -264,8 +104,8 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
               <div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">SpecArc <span className="text-indigo-600 dark:text-indigo-400">AI</span></h2>
                 <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                    <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold tracking-[0.22em] uppercase">Chat Assistant</p>
+                    <div className={`w-1.5 h-1.5 rounded-full ${error ? 'bg-rose-500' : 'bg-green-500'} animate-pulse`}></div>
+                    <p className="text-gray-500 dark:text-gray-400 text-[10px] font-bold tracking-[0.22em] uppercase">{error ? 'Connection Issue' : 'Chat Assistant'}</p>
                 </div>
               </div>
           </div>
@@ -276,17 +116,12 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
 
        {/* Chat Area */}
        <div className="flex-1 overflow-y-auto p-5 space-y-5 z-10">
-          {initError && (
-            <div className="rounded-2xl border border-amber-200 dark:border-amber-400/20 bg-amber-50/90 dark:bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-100 shadow-sm">
-              {initError}
-            </div>
-          )}
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-5 duration-500`}>
                 <div className={`flex gap-3 max-w-[92%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg border ${
-                        msg.role === 'user' 
-                        ? 'bg-gray-900 dark:bg-white border-white/10 dark:border-white/10 text-white dark:text-gray-900' 
+                        msg.role === 'user'
+                        ? 'bg-gray-900 dark:bg-white border-white/10 dark:border-white/10 text-white dark:text-gray-900'
                         : 'bg-white/85 dark:bg-slate-900/70 border-white/60 dark:border-white/10'
                     }`}>
                         {msg.role === 'user' ? (
@@ -295,10 +130,10 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
                           <img src="/specarc-mark.svg" alt="" className="w-10 h-10 rounded-xl" />
                         )}
                     </div>
-                    
+
                     <div className={`p-5 rounded-2xl shadow-sm backdrop-blur-md border leading-relaxed text-[15px] md:text-base ${
-                        msg.role === 'user' 
-                        ? 'bg-gray-900 dark:bg-white border-gray-900 dark:border-white text-white dark:text-gray-900 rounded-tr-md' 
+                        msg.role === 'user'
+                        ? 'bg-gray-900 dark:bg-white border-gray-900 dark:border-white text-white dark:text-gray-900 rounded-tr-md'
                         : 'bg-white/85 dark:bg-slate-900/70 border-white/70 dark:border-white/10 text-gray-700 dark:text-gray-100 rounded-tl-md'
                     }`}>
                          {msg.role === 'model' && (
@@ -312,7 +147,7 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
                 </div>
             </div>
           ))}
-          
+
           {isLoading && (
               <div className="flex justify-start">
                   <div className="flex gap-3 max-w-[92%]">
@@ -336,22 +171,22 @@ export const AIWizard: React.FC<AIWizardProps> = ({ onCancel, onProjectGenerated
        {/* Input Area */}
        <div className="p-5 bg-white/65 dark:bg-slate-900/65 border-t border-white/50 dark:border-white/10 backdrop-blur-md z-20">
           <div className="relative max-w-4xl mx-auto flex items-center gap-4">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={initError ? "Add GEMINI_API_KEY to enable SpecArc AI..." : "Describe your product idea..."}
+                onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+                placeholder="Describe your product idea..."
+                disabled={isLoading}
                 className="w-full bg-white/90 dark:bg-slate-950/50 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 rounded-2xl py-4 pl-5 pr-16 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 transition-all text-base font-medium shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 autoFocus
-                disabled={!!initError}
               />
-              <button 
+              <button
                 onClick={handleSend}
-                disabled={isLoading || !input.trim() || !!initError}
+                disabled={isLoading || !input.trim()}
                 className="absolute right-2 top-2 bottom-2 aspect-square bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl flex items-center justify-center transition-all shadow-[0_16px_32px_-16px_rgba(99,102,241,0.7)] disabled:opacity-50 disabled:shadow-none"
               >
-                <Send size={20} strokeWidth={2.5} />
+                {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} strokeWidth={2.5} />}
               </button>
           </div>
        </div>
