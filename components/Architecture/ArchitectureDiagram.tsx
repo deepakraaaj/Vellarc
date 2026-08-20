@@ -3,6 +3,7 @@ import { ReactFlow, ReactFlowProvider, Background, Controls } from '@xyflow/reac
 import '@xyflow/react/dist/style.css';
 import { Architecture } from '../../types';
 import { architectureToFlow } from '../../lib/architecture';
+import { useIsDarkMode } from '../../lib/useIsDarkMode';
 import { DiagramNode } from './DiagramNode';
 
 const nodeTypes = { archNode: DiagramNode };
@@ -13,6 +14,7 @@ interface ArchitectureDiagramProps {
 }
 
 export const ArchitectureDiagram: React.FC<ArchitectureDiagramProps> = ({ value, height = 560 }) => {
+  const isDarkMode = useIsDarkMode();
   const { nodes, edges } = useMemo(() => {
     const flow = architectureToFlow(value);
     return {
@@ -38,6 +40,7 @@ export const ArchitectureDiagram: React.FC<ArchitectureDiagramProps> = ({ value,
           panOnScroll
           zoomOnScroll={false}
           proOptions={{ hideAttribution: true }}
+          colorMode={isDarkMode ? 'dark' : 'light'}
         >
           <Background gap={20} size={1} className="opacity-60" />
           <Controls showInteractive={false} className="!shadow-lg !rounded-xl overflow-hidden" />

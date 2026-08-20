@@ -19,6 +19,7 @@ import '@xyflow/react/dist/style.css';
 import { Plus, Sparkles, Loader2, Trash2, Boxes, X } from 'lucide-react';
 import { Architecture, ArchitectureNodeType } from '../../types';
 import { architectureToFlow, flowToArchitecture, makeId } from '../../lib/architecture';
+import { useIsDarkMode } from '../../lib/useIsDarkMode';
 import { ARCH_ACCENT_CLASSES, ARCH_NODE_TYPES, getArchNodeConfig } from './archTypes';
 import { DiagramNode, type DiagramNodeData } from './DiagramNode';
 
@@ -39,6 +40,7 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
   const [suggestError, setSuggestError] = useState<string | null>(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
+  const isDarkMode = useIsDarkMode();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const syncUp = useCallback(
@@ -181,10 +183,18 @@ const CanvasInner: React.FC<ArchitectureCanvasProps> = ({ value, onChange, onSug
           minZoom={0.3}
           maxZoom={1.5}
           proOptions={{ hideAttribution: true }}
+          colorMode={isDarkMode ? 'dark' : 'light'}
         >
           <Background gap={20} size={1} className="opacity-60" />
           <Controls showInteractive={false} className="!shadow-lg !rounded-xl overflow-hidden" />
-          <MiniMap pannable zoomable className="!rounded-xl !shadow-lg !bg-white/80 dark:!bg-slate-900/80" />
+          <MiniMap
+            pannable
+            zoomable
+            className="!rounded-xl !shadow-lg"
+            maskColor={isDarkMode ? 'rgba(15, 23, 42, 0.7)' : 'rgba(240, 240, 240, 0.6)'}
+            bgColor={isDarkMode ? '#0f172a' : '#ffffff'}
+            nodeColor={isDarkMode ? '#475569' : '#e2e2e2'}
+          />
         </ReactFlow>
 
         {/* Toolbar */}
