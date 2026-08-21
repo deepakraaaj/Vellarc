@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { ProjectView } from './components/ProjectView';
 import { ProjectEditor } from './components/ProjectEditor';
@@ -34,6 +34,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAIOverlayOpen, setIsAIOverlayOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const handledDeepLink = useRef(false);
 
   // Track which step to open in the editor
   const [editorInitialStep, setEditorInitialStep] = useState<string>('basic');
@@ -142,6 +143,28 @@ function App() {
     setIsAIOverlayOpen(true);
   };
 
+  useEffect(() => {
+    if (!user || isProjectsLoading || handledDeepLink.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get('project');
+    const action = params.get('action');
+    if (!projectId && action !== 'new') return;
+
+    handledDeepLink.current = true;
+    if (action === 'new') {
+      handleEditRequest(newBlankProject(), 'basic');
+    } else {
+      const project = projects.find((candidate) => candidate.id === projectId);
+      if (project) transitionTo('view', project);
+    }
+
+    params.delete('project');
+    params.delete('action');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`);
+  }, [isProjectsLoading, projects, user]);
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -159,13 +182,16 @@ function App() {
 
       {/* Mobile Header - Visible only on mobile */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-40 border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between shadow-sm transition-colors duration-300">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <img
             src="/specarc-mark.svg"
             alt="SpecArc logo"
-            className="w-10 h-10 rounded-xl shadow-[0_12px_28px_-12px_rgba(99,102,241,0.8)]"
+            className="w-10 h-10 shrink-0 drop-shadow-[0_12px_24px_rgba(99,102,241,0.22)]"
           />
-          <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">SpecArc</span>
+          <div>
+            <h1 className="font-extrabold text-base leading-none tracking-[-0.04em] text-gray-900 dark:text-white">SpecArc</h1>
+            <p className="mono-ui text-[8.5px] mt-1 uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500 whitespace-nowrap">Product Architecture</p>
+          </div>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Hexagon, Loader2, Mail, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 type Mode = 'sign-in' | 'sign-up';
@@ -40,13 +40,17 @@ export const AuthScreen: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
-          <div className="relative group mb-4">
-            <div className="absolute inset-0 bg-indigo-500 rounded-xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-            <div className="relative bg-gradient-to-br from-indigo-600 to-violet-600 p-3 rounded-xl shadow-lg border border-white/20">
-              <Hexagon size={28} className="text-white fill-white/20" strokeWidth={2} />
+          <div className="flex items-center gap-4 mb-3">
+            <img
+              src="/specarc-mark.svg"
+              alt="SpecArc logo"
+              className="w-12 h-12 shrink-0 drop-shadow-[0_16px_28px_rgba(99,102,241,0.22)]"
+            />
+            <div className="min-w-0 text-left">
+              <h1 className="font-extrabold text-[1.8rem] leading-none tracking-[-0.04em] text-gray-900 dark:text-white transition-colors">SpecArc</h1>
+              <p className="mono-ui text-[10px] mt-2 uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500 whitespace-nowrap">Product Architecture</p>
             </div>
           </div>
-          <h1 className="font-extrabold text-2xl tracking-tight text-gray-900 dark:text-white">DocuMaster</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {mode === 'sign-in' ? 'Sign in to your workspace' : 'Create your workspace'}
           </p>
